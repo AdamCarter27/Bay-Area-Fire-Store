@@ -56,7 +56,7 @@ export default function RootLayout({
             </nav>
             <div className="flex gap-4 text-sm">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/profile.php?id=61568764863734"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-500 hover:text-black dark:hover:text-white"
@@ -64,7 +64,7 @@ export default function RootLayout({
                 Facebook
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/bayareafirestore/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-500 hover:text-black dark:hover:text-white"
