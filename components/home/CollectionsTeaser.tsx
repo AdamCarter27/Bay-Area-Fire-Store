@@ -2,15 +2,16 @@ import Link from "next/link";
 import { collections } from "@/lib/data/products";
 import { ProductImage } from "@/components/product/ProductImage";
 import { Reveal } from "@/components/ui/Reveal";
+import { SplitHeadline } from "@/components/ui/SplitHeadline";
 
 export function CollectionsTeaser() {
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
+          <SplitHeadline className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
             Departments &amp; brands
-          </h2>
+          </SplitHeadline>
           <p className="mt-2 max-w-md text-ash">
             Shop your department or the brands you trust.
           </p>

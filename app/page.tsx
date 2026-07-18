@@ -1,5 +1,4 @@
 import { Hero } from "@/components/home/Hero";
-import { CultureCarousel } from "@/components/home/CultureCarousel";
 import { FeaturedCollection } from "@/components/home/FeaturedCollection";
 import { CustomOrderCallout } from "@/components/home/CustomOrderCallout";
 import { CollectionsTeaser } from "@/components/home/CollectionsTeaser";
@@ -11,7 +10,6 @@ export default function Home() {
     <div className="relative -mt-[71px]">
       <Hero />
       <div className="relative z-10 bg-paper">
-        <CultureCarousel />
         <CustomOrderCallout />
         <FeaturedCollection />
         <CollectionsTeaser />

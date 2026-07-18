@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { culturePhotos } from "@/lib/data/culture";
 import { ProductImage } from "@/components/product/ProductImage";
+import { SplitHeadline } from "@/components/ui/SplitHeadline";
 
 export function CultureCarousel() {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -19,9 +20,9 @@ export function CultureCarousel() {
     <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
+          <SplitHeadline className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
             Pictures and whatnot
-          </h2>
+          </SplitHeadline>
         </div>
 
         <div className="flex gap-2">
