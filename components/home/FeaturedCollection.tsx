@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getFeatured } from "@/lib/data/products";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Reveal } from "@/components/ui/Reveal";
+import { SplitHeadline } from "@/components/ui/SplitHeadline";
 
 export function FeaturedCollection() {
   const products = getFeatured(8);
@@ -10,9 +11,9 @@ export function FeaturedCollection() {
     <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
+          <SplitHeadline className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
             New drops
-          </h2>
+          </SplitHeadline>
         </div>
         <Link
           href="/shop"

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/Button";
 import { backgroundVideo } from "@/lib/data/culture";
-
-const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
 
 export function Hero() {
   const hasVideo = Boolean(backgroundVideo.src);
@@ -16,6 +16,7 @@ export function Hero() {
   useEffect(() => {
     const root = rootRef.current;
     const stage = stageRef.current;
+    const content = contentRef.current;
     const video = videoRef.current;
     if (!root || !stage) return;
 
@@ -27,41 +28,52 @@ export function Hero() {
       else video.play().catch(() => {});
     }
 
+    // Reduced motion: no parallax handoff — GSAP/ScrollTrigger never engages.
+    if (reduce) return;
+
+    gsap.registerPlugin(ScrollTrigger);
     const wrap = root.parentElement ?? root;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const progress = clamp01(-wrap.getBoundingClientRect().top / window.innerHeight);
-      if (!reduce) {
-        stage.style.transform = `scale(${1 - progress * 0.06}) translateY(${progress * 8}%)`;
-        stage.style.opacity = String(1 - progress * 0.5);
-        stage.style.filter = small ? "none" : `blur(${progress * 6}px)`;
-        // Headline/CTAs fade and rise faster than the video so the text
-        // clears out before the footage fully recedes. Same eased timeline
-        // for both, with a real pixel distance so the rise is visible.
-        const content = contentRef.current;
-        if (content) {
-          const p = clamp01(progress * 1.6);
-          content.style.opacity = String(1 - p);
-          content.style.transform = `translateY(-${p * 110}px)`;
-        }
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: wrap,
+          start: "top top",
+          end: () => `+=${window.innerHeight}`,
+          invalidateOnRefresh: true,
+          scrub: 0.4, 
+          onUpdate: (self) => {
+            if (!video) return;
+            if (self.progress >= 0.99 && !video.paused) video.pause();
+            else if (self.progress < 0.99 && video.paused) video.play().catch(() => {});
+          },
+        },
+      });
+
+      // Video layer recedes across the full scroll range.
+      tl.to(
+        stage,
+        {
+          scale: 0.94,
+          yPercent: 8,
+          opacity: 0.5,
+          ...(small ? {} : { filter: "blur(6px)" }),
+          ease: "none",
+          duration: 1,
+        },
+        0,
+      );
+
+      if (content) {
+        tl.to(
+          content,
+          { opacity: 0, y: -110, ease: "none", duration: 1 / 1.6 },
+          0,
+        );
       }
-      if (video && !reduce) {
-        if (progress >= 0.99 && !video.paused) video.pause();
-        else if (progress < 0.99 && video.paused) video.play().catch(() => {});
-      }
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    update();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    }, root);
+
+    return () => ctx.revert();
   }, [hasVideo]);
 
   return (
