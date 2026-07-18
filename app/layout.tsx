@@ -82,50 +82,23 @@ export default function RootLayout({
                 </Link>
               ))}
             </nav>
-
-            <div>
-              <p className="font-display text-base font-semibold text-ink">
-                Join our mailing list
-              </p>
-              <p className="mt-2 text-sm text-ash">
-                Stay updated and never miss a drop.
-              </p>
-              <form className="mt-4 flex max-w-sm gap-2">
-                <label htmlFor="newsletter-email" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="newsletter-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  className="w-full rounded-full border border-line-strong bg-paper px-4 py-2.5 text-sm text-ink placeholder:text-ash focus:border-ink focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-signal"
-                >
-                  Sign up now
-                </button>
-              </form>
-              <div className="mt-6 flex gap-4 text-sm text-ash">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:text-ink"
-                >
-                  Facebook
-                </a>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:text-ink"
-                >
-                  Instagram
-                </a>
-              </div>
+            <div className="flex gap-4 text-sm">
+              <a
+                href="https://www.facebook.com/profile.php?id=61568764863734"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-500 hover:text-black dark:hover:text-white"
+              >
+                Facebook
+              </a>
+              <a
+                href="https://www.instagram.com/bayareafirestore/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-500 hover:text-black dark:hover:text-white"
+              >
+                Instagram
+              </a>
             </div>
           </div>
 
