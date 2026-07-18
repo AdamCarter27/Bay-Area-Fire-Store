@@ -1,26 +1,143 @@
 @import "tailwindcss";
 
+/* ============================================================
+   The Firehouse Editorial — design tokens
+   Achromatic base (true white + near-black) with a single
+   Signal Red. All color in OKLCH. See DESIGN.md.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Neutrals — cool, true (no warm cream; see The No-Cream Rule) */
+  --paper: oklch(0.992 0 0); /* base background */
+  --surface: oklch(0.968 0 0); /* alternating section fill */
+  --ink: oklch(0.19 0.008 25); /* headlines, primary text */
+  --ink-soft: oklch(0.34 0.006 25); /* secondary headings */
+  --ash: oklch(0.462 0.006 25); /* muted body / meta — AA on paper */
+  --line: oklch(0.9 0 0); /* hairline borders, dividers */
+  --line-strong: oklch(0.82 0 0);
+
+  /* Signal Red — the one accent. The Single Spark Rule: <=10% of any screen. */
+  --signal: oklch(0.523 0.192 27); /* CTA, one hero mark, urgent states */
+  --signal-deep: oklch(0.448 0.174 27); /* hover / active */
+  --on-signal: oklch(0.99 0.008 60); /* text on red — ~5:1 */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  /* Semantic z-scale */
+  --z-header: 100;
+  --z-dropdown: 200;
+  --z-overlay: 300;
+  --z-toast: 400;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ash: var(--ash);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-signal: var(--signal);
+  --color-signal-deep: var(--signal-deep);
+  --color-on-signal: var(--on-signal);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---- Base ---- */
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--on-signal);
+}
+
+/* Consistent, visible focus for keyboard users across the store */
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Carousels: scrollable but without the visible scrollbar chrome. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), Georgia, serif;
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* ============================================================
+   Motion — choreographed landing, reduced-motion safe.
+   Content is visible by default; JS layers the reveal on top.
+   ============================================================ */
+
+@keyframes fs-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Hero load choreography: each element opts in with a delay. */
+.fs-hero-in {
+  animation: fs-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Scroll reveal: only elements that JS has armed start hidden. */
+[data-reveal="armed"] {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fs-hero-in {
+    animation: none;
+  }
+  [data-reveal="armed"],
+  [data-reveal="shown"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

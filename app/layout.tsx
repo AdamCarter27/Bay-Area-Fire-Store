@@ -1,30 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display: a refined variable serif for the editorial headlines.
+const fraunces = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
+  axes: ["opsz"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Body/UI: a clean neutral sans on the opposite side of the contrast axis.
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Bay Area Fire Store",
-  description: "Your local source for Bay Area fire gear and apparel.",
+  title: "Bay Area Fire Store — Your Local Source for Bay Area Fire Gear",
+  description:
+    "Firefighter-owned since 2024. Your trusted source for high-quality on- and off-duty apparel, custom embroidery and screen printing, and the brands you trust.",
 };
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/custom-order", label: "Custom Order Form" },
-  { href: "/shop", label: "Shop" },
-  { href: "/brands", label: "Brands" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+const footerNav = [
+  { href: "/faq", label: "FAQ" },
+  { href: "/shipping-returns", label: "Shipping & Returns" },
+  { href: "/terms", label: "Terms & Conditions" },
 ];
 
 export default function RootLayout({
@@ -35,20 +39,44 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white dark:bg-black">
-        <header className="border-b border-black/[.08] dark:border-white/[.145]">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-            <Link href="/" className="text-lg font-semibold tracking-tight">
-              Bay Area Fire Store
-            </Link>
-            <nav className="hidden gap-6 text-sm font-medium md:flex">
-              {navLinks.map((link) => (
+      <body className="flex min-h-full flex-col bg-paper text-ink">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[400] focus:rounded-md focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-paper"
+        >
+          Skip to content
+        </a>
+
+        <SiteHeader />
+
+        <main id="main" className="flex flex-1 flex-col">
+          {children}
+        </main>
+
+        <footer className="mt-auto border-t border-line bg-surface">
+          <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1.5fr_1fr_1.5fr]">
+            <div className="max-w-xs">
+              <p className="flex items-baseline gap-2 font-display text-lg font-semibold text-ink">
+                <span
+                  aria-hidden
+                  className="inline-block h-2 w-2 rounded-full bg-signal"
+                />
+                Bay Area Fire Store
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-ash">
+                A firefighter-owned business, established 2024. Your local source
+                for high-quality on- and off-duty Bay Area fire gear.
+              </p>
+            </div>
+
+            <nav aria-label="Footer" className="flex flex-col gap-3 text-sm">
+              {footerNav.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white"
+                  className="w-fit text-ash transition-colors hover:text-ink"
                 >
                   {link.label}
                 </Link>
@@ -73,43 +101,12 @@ export default function RootLayout({
               </a>
             </div>
           </div>
-        </header>
 
-        <main className="flex flex-1 flex-col">{children}</main>
-
-        <footer className="border-t border-black/[.08] dark:border-white/[.145]">
-          <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
-            <nav className="flex flex-wrap gap-6 text-sm text-zinc-600 dark:text-zinc-400">
-              <Link href="/faq" className="hover:text-black dark:hover:text-white">
-                FAQ
-              </Link>
-              <Link
-                href="/shipping-returns"
-                className="hover:text-black dark:hover:text-white"
-              >
-                Shipping &amp; Returns
-              </Link>
-              <Link href="/terms" className="hover:text-black dark:hover:text-white">
-                Terms &amp; Conditions
-              </Link>
-            </nav>
-            <form className="flex gap-2">
-              <label htmlFor="newsletter-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="newsletter-email"
-                type="email"
-                placeholder="Stay updated, never miss a drop"
-                className="w-56 rounded-full border border-black/[.08] bg-transparent px-4 py-2 text-sm dark:border-white/[.145]"
-              />
-              <button
-                type="submit"
-                className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background"
-              >
-                Sign Up
-              </button>
-            </form>
+          <div className="border-t border-line">
+            <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-6 text-xs text-ash sm:flex-row sm:items-center sm:justify-between sm:px-8">
+              <p>© {new Date().getFullYear()} Bay Area Fire Store. All rights reserved.</p>
+              <p>Firefighter-owned · Est. 2024</p>
+            </div>
           </div>
         </footer>
       </body>
