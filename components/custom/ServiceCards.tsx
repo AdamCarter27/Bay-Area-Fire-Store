@@ -93,13 +93,12 @@ export function ServiceCards() {
 }
 
 /*
- * Flip card. On hover-capable devices, hover or keyboard focus rotates the
- * card 180° to an inverted paper face carrying the item list. Tailwind v4
- * compiles hover: variants inside (hover: hover), so on touch devices the
- * can-hover: classes vanish: the card never rotates and the front's gradient
- * overlay list is simply visible. The front overlay hides via opacity (not
- * display) on hover devices so the list stays in the accessibility tree;
- * the back face duplicates it visually and is aria-hidden.
+ * Photo card with a slide-up item list. The overlay is one node that serves
+ * every input mode: Tailwind v4 compiles hover: variants inside (hover:
+ * hover), so on touch devices the can-hover: classes vanish and the list is
+ * simply visible over the photo. On hover-capable devices it sits hidden
+ * (opacity, not display — so it stays in the accessibility tree) and slides
+ * up on hover or keyboard focus.
  */
 function ServiceCard({ service }: { service: Service }) {
   return (
@@ -109,56 +108,30 @@ function ServiceCard({ service }: { service: Service }) {
       aria-label={`${service.name} services`}
       className="group flex flex-col"
     >
-      <div className="relative perspective-distant">
-        <div className="relative transform-3d transition-transform duration-500 ease-out motion-reduce:transition-none can-hover:group-hover:rotate-y-180 can-hover:group-focus-visible:rotate-y-180">
-          {/* Front: photo (in-flow, sets the flipper's height) */}
-          <div className="backface-hidden relative overflow-hidden rounded-lg border border-paper/15 transition-colors group-hover:border-paper/40 group-focus-visible:border-paper/40">
-            <ProductImage
-              src={service.image}
-              alt={`${service.name} equipment`}
-              label={service.name}
-              sizes="(min-width: 640px) 30vw, 90vw"
-              className="aspect-square w-full"
-            />
+      <div className="relative overflow-hidden rounded-lg border border-paper/15 transition-colors group-hover:border-paper/40 group-focus-visible:border-paper/40">
+        <ProductImage
+          src={service.image}
+          alt={`${service.name} equipment`}
+          label={service.name}
+          sizes="(min-width: 640px) 30vw, 90vw"
+          className="aspect-square w-full"
+        />
 
-            <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-ink/90 via-ink/70 to-ink/0 px-5 pb-5 pt-14 can-hover:opacity-0">
-              <span className="text-xs font-medium uppercase tracking-wider text-paper/70">
-                Covers
-              </span>
-              <ul className="flex flex-col gap-1 text-sm text-paper">
-                {service.items.map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span
-                      aria-hidden
-                      className="h-1 w-1 shrink-0 rounded-full bg-signal"
-                    />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Back: inverted paper face */}
-          <div
-            aria-hidden
-            className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col justify-center gap-2 overflow-hidden rounded-lg bg-paper px-5 lg:gap-2.5 lg:px-6"
-          >
-            <span className="text-xs font-medium uppercase tracking-wider text-ash">
-              Covers
-            </span>
-            <ul className="flex flex-col gap-1 text-sm text-ink lg:gap-1.5">
-              {service.items.map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="h-1 w-1 shrink-0 rounded-full bg-signal"
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-ink/90 via-ink/70 to-ink/0 px-5 pb-5 pt-14 transition-[opacity,transform] duration-500 ease-out can-hover:opacity-0 can-hover:group-hover:opacity-100 can-hover:group-focus-visible:opacity-100 motion-safe:can-hover:translate-y-3 motion-safe:can-hover:group-hover:translate-y-0 motion-safe:can-hover:group-focus-visible:translate-y-0 motion-reduce:transition-none">
+          <span className="text-xs font-medium uppercase tracking-wider text-paper/70">
+            Covers
+          </span>
+          <ul className="flex flex-col gap-1 text-sm text-paper">
+            {service.items.map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="h-1 w-1 shrink-0 rounded-full bg-signal"
+                />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
