@@ -73,6 +73,15 @@ body {
   border-radius: 2px;
 }
 
+/* Applies only on devices whose primary input can hover (mouse/trackpad).
+   Touch devices skip these styles entirely, so hover-revealed content must
+   be visible in its base state. */
+@custom-variant can-hover {
+  @media (hover: hover) {
+    @slot;
+  }
+}
+
 /* Carousels: scrollable but without the visible scrollbar chrome. */
 .no-scrollbar {
   scrollbar-width: none;
