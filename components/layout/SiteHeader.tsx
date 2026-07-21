@@ -3,19 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MobileMenu } from "./MobileMenu";
+import { ShopDropdown } from "./ShopDropdown";
+import { CartLink } from "@/components/cart/CartLink";
 
 const navLinks = [
-  { href: "/shop", label: "Shop" },
   { href: "/brands", label: "Brands" },
   { href: "/custom-order", label: "Custom Order Form" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
 
-/**
- * Adaptive header: transparent with light text while over the video hero,
- * transitions to solid paper with dark text once the content scrolls up.
- */
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -37,7 +34,6 @@ export function SiteHeader() {
           : "border-b border-transparent"
       }`}
     >
-      {/* Faint top scrim so nav stays legible over bright footage. */}
       {light && (
         <div
           aria-hidden
@@ -65,6 +61,7 @@ export function SiteHeader() {
             light ? "text-paper/85" : "text-ink-soft"
           }`}
         >
+          <ShopDropdown light={light} />
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -79,17 +76,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
-          <Link
-            href="/cart"
-            className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-              light
-                ? "border-paper/40 text-paper hover:border-paper"
-                : "border-line-strong text-ink hover:border-ink"
-            }`}
-          >
-            Cart
-          </Link>
-          <MobileMenu links={navLinks} light={light} />
+          <CartLink light={light} />
+          <MobileMenu links={[{ href: "/shop", label: "Shop" }, ...navLinks]} light={light} />
         </div>
       </div>
     </header>
