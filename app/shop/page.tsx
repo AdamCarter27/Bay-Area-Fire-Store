@@ -1,28 +1,61 @@
 import Link from "next/link";
 import { products } from "@/lib/data/products";
 import { categoryGroups } from "@/lib/data/categoryGroups";
-import { brandGroups } from "@/lib/data/brands";
+import { brands, brandGroups } from "@/lib/data/brands";
+import { ShopFilters, priceRanges } from "@/components/shop/ShopFilters";
 
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ group?: string; brandGroup?: string }>;
+  searchParams: Promise<{
+    group?: string;
+    brandGroup?: string;
+    brand?: string;
+    price?: string;
+    size?: string;
+  }>;
 }) {
-  const { group: groupSlug, brandGroup: brandGroupSlug } = await searchParams;
+  const {
+    group: groupSlug,
+    brandGroup: brandGroupSlug,
+    brand: brandSlug,
+    price: priceParam,
+    size: sizeParam,
+  } = await searchParams;
+
   const activeGroup = categoryGroups.find((g) => g.slug === groupSlug);
   const activeBrandGroup = brandGroups.find((g) => g.slug === brandGroupSlug);
+  const activeBrand = brands.find((b) => b.slug === brandSlug);
+  const activePriceIds = priceParam?.split(",").filter(Boolean) ?? [];
+  const activeSizes = sizeParam?.split(",").filter(Boolean) ?? [];
 
   let filtered = products;
+
   if (activeGroup) {
     filtered = filtered.filter((p) => activeGroup.categories.includes(p.category));
   }
-  if (activeBrandGroup) {
+  if (activeBrand) {
+    filtered = filtered.filter((p) => p.collection === activeBrand.slug);
+  } else if (activeBrandGroup) {
     filtered = filtered.filter(
       (p) => p.collection && activeBrandGroup.brands.includes(p.collection)
     );
   }
+  if (activePriceIds.length > 0) {
+    const ranges = priceRanges.filter((r) => activePriceIds.includes(r.id));
+    filtered = filtered.filter((p) =>
+      ranges.some((r) => p.price >= r.min && p.price <= r.max)
+    );
+  }
+  if (activeSizes.length > 0) {
+    filtered = filtered.filter((p) =>
+      p.variants.some((v) => activeSizes.includes(v.title))
+    );
+  }
 
-  const heading = activeBrandGroup
+  const heading = activeBrand
+    ? `Showing: ${activeBrand.label}`
+    : activeBrandGroup
     ? `Showing: ${activeBrandGroup.label}`
     : activeGroup
     ? `Showing: ${activeGroup.label}`
@@ -43,7 +76,7 @@ export default async function ShopPage({
               <Link
                 href="/shop"
                 className={
-                  !activeGroup && !activeBrandGroup
+                  !activeGroup && !activeBrandGroup && !activeBrand
                     ? "font-medium text-ink underline"
                     : "text-ash hover:text-ink hover:underline"
                 }
@@ -89,11 +122,15 @@ export default async function ShopPage({
               </Link>
             </nav>
           </div>
+
+          <div className="border-t border-line pt-8">
+            <ShopFilters />
+          </div>
         </aside>
 
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
           {filtered.length === 0 && (
-            <p className="text-sm text-ash">No products in this category yet.</p>
+            <p className="text-sm text-ash">No products match these filters.</p>
           )}
           {filtered.map((product) => (
             <Link

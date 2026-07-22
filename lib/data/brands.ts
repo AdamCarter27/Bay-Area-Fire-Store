@@ -7,7 +7,6 @@ export const brands: Brand[] = [
   { slug: "2-eleven-shields", label: "2 Eleven Shields" },
   { slug: "bay-area-fire-conference", label: "2026 Bay Area Fire Conference Apparel" },
   { slug: "asian-firefighters-association", label: "Asian Firefighters Association" },
-  { slug: "bay-area-fire-store", label: "Bay Area Fire Store Apparel" },
   { slug: "colma-fire", label: "Colma Fire District" },
   { slug: "fight-fire-get-dirty", label: "Fight Fire, Get Dirty" },
   { slug: "fire-nuggets", label: "Fire Nuggets" },
