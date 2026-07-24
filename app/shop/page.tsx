@@ -2,7 +2,8 @@ import Link from "next/link";
 import { products } from "@/lib/data/products";
 import { categoryGroups } from "@/lib/data/categoryGroups";
 import { brands, brandGroups } from "@/lib/data/brands";
-import { ShopFilters, priceRanges } from "@/components/shop/ShopFilters";
+import { ShopFilters } from "@/components/shop/ShopFilters";
+import { priceRanges } from "@/lib/data/priceRanges";
 
 export default async function ShopPage({
   searchParams,

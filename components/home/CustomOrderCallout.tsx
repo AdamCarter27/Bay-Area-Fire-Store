@@ -8,7 +8,7 @@ export function CustomOrderCallout() {
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-2 lg:gap-16">
         <Reveal>
           <SplitHeadline className="font-display text-[clamp(1.9rem,4vw,2.8rem)] font-semibold leading-[1.05] tracking-tight text-ink justify-center">
-            Got a Custom Job? Embroidery, Screen Print, Heat Transfers?!
+            Got a Custom Job? Embroidery, Screen Print, Heat Transfers, Stickers?!
           </SplitHeadline>
 
           <div className="mt-10">

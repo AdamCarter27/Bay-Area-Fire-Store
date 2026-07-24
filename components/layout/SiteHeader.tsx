@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { MobileMenu } from "./MobileMenu";
 import { ShopDropdown } from "./ShopDropdown";
+import { CustomOrderDropdown } from "./CustomOrderDropdown";
 import { CartLink } from "@/components/cart/CartLink";
 
 const navLinks = [
@@ -42,17 +44,19 @@ export function SiteHeader() {
       )}
 
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-5 py-4 sm:px-8">
-        <Link
-          href="/"
-          className={`flex items-baseline gap-2 font-display text-lg font-semibold tracking-tight transition-colors ${
-            light ? "text-paper" : "text-ink"
-          }`}
-        >
-          <span
-            aria-hidden
-            className="inline-block h-2 w-2 shrink-0 translate-y-[-1px] rounded-full bg-signal"
+        <Link href="/" aria-label="Bay Area Fire Store — home" className="flex items-center">
+          {/* Logo art is white; invert it to dark once the header turns solid
+              on scroll so it reads on the paper background. */}
+          <Image
+            src="/media/BayAreaFireStoreLogo.avif"
+            alt="Bay Area Fire Store"
+            width={386}
+            height={172}
+            priority
+            className={`h-10 w-auto transition-[filter] duration-300 sm:h-12 ${
+              light ? "" : "invert"
+            }`}
           />
-          Bay Area Fire Store
         </Link>
 
         <nav
@@ -62,22 +66,33 @@ export function SiteHeader() {
           }`}
         >
           <ShopDropdown light={light} />
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`transition-colors ${
-                light ? "hover:text-paper" : "hover:text-ink"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) =>
+            link.href === "/custom-order" ? (
+              <CustomOrderDropdown key={link.href} light={light} />
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`transition-colors ${
+                  light ? "hover:text-paper" : "hover:text-ink"
+                }`}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
           <CartLink light={light} />
-          <MobileMenu links={[{ href: "/shop", label: "Shop" }, ...navLinks]} light={light} />
+          <MobileMenu
+            links={[
+              { href: "/shop", label: "Shop" },
+              ...navLinks,
+              { href: "/custom-order/brands", label: "Available Brands" },
+            ]}
+            light={light}
+          />
         </div>
       </div>
     </header>
