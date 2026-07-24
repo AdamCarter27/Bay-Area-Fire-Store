@@ -16,6 +16,7 @@ export const SERVICE_OPTIONS = [
   "Embroidery",
   "DTF Heat Press – Shirts",
   "Custom Coffee Mugs / Tumblers",
+  "Stickers",
   "Other",
 ] as const;
 

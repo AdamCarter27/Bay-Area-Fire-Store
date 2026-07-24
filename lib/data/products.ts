@@ -1,20 +1,31 @@
-// Mock product data. Structured to mirror a future Shopify data source so the
-// UI can swap to a real backend without shape changes.
+// Mock product data. Shaped as our own internal domain type — not a raw
+// backend schema — so the UI never touches API-specific field names. When
+// this becomes real, getProduct()/getFeatured() swap to call the Wix
+// Headless (Wix Stores) SDK and map its response into this same shape;
+// every component below keeps reading .title/.price/.image unchanged.
 //
-// product photography. Cards render a branded placeholder frame until a path
-// (e.g. "/products/sffd-tee.jpg" under /public) is filled in here.
+// Field mapping for that future Wix mapper (@wix/stores product → Product):
+//   slug       ← product.slug
+//   title      ← product.name
+//   price      ← product.priceData.price (or variant.priceData.price)
+//   image      ← product.media.mainMedia.image.url
+//   category   ← derived from product.collectionIds / breadcrumb
+//   collection ← primary entry of product.collectionIds (Wix allows many;
+//                we simplify to one for the storefront's single-collection nav)
+//   badge      ← product.ribbon?.text (Wix's own name for this exact concept)
+//   variants   ← product.variants[], each choice's own priceData.price
 
 export type ProductVariant = {
   id: string;
   title: string; // e.g. size or color, "M" / "Navy"
-  price: number; // in USD
+  price: number; // 
 };
 
 export type Product = {
   slug: string;
   title: string;
-  price: number; // base/
-  image: string; // path under /public or remote URL; "" = use placeholder
+  price: number; // base/display price in USD
+  image: string; // path under /public or remote URL;
   category: string; // e.g. "headwear", "hoodies", "tees"
   collection?: string; // department or brand collection slug
   badge?: string; // small merchandising flag, e.g. "New", "Best seller"
@@ -111,6 +122,12 @@ export const products: Product[] = [
   },
 ];
 
+// Future mapper (@wix/stores collection → Collection):
+//   slug  ← collection.slug
+//   title ← collection.name
+//   blurb ← collection.description
+//   image ← collection.media?.mainMedia?.image?.url
+//   kind  ← not a Wix concept; ours to assign per collection (department vs. brand)
 export type Collection = {
   slug: string;
   title: string;
