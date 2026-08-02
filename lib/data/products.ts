@@ -6,18 +6,18 @@
 
 export type ProductVariant = {
   id: string;
-  title: string; // e.g. size or color, "M" / "Navy"
-  price: number; // in USD
+  title: string; 
+  price: number; 
 };
 
 export type Product = {
   slug: string;
   title: string;
-  price: number; // base/
-  image: string; // path under /public or remote URL; "" = use placeholder
-  category: string; // e.g. "headwear", "hoodies", "tees"
-  collection?: string; // department or brand collection slug
-  badge?: string; // small merchandising flag, e.g. "New", "Best seller"
+  price: number;
+  image: string; 
+  category: string; 
+  collection?: string; 
+  badge?: string; 
   variants: ProductVariant[];
 };
 
@@ -30,6 +30,13 @@ const sizes = (base: number): ProductVariant[] =>
 
 const oneSize = (price: number): ProductVariant[] => [
   { id: "os", title: "One size", price },
+];
+
+
+const hatSizes = (price: number): ProductVariant[] => [
+  { id: "one-size", title: "One Size", price },
+  { id: "sm", title: "S/M", price },
+  { id: "lxl", title: "L/XL", price },
 ];
 
 export const products: Product[] = [
@@ -69,7 +76,7 @@ export const products: Product[] = [
     image: "",
     category: "hats",
     collection: "bay-area",
-    variants: oneSize(29.99),
+    variants: hatSizes(29.99),
   },
   {
     slug: "front-seat-academy-hoodie",
@@ -97,7 +104,7 @@ export const products: Product[] = [
     image: "",
     category: "hats",
     collection: "bay-area",
-    variants: oneSize(24.99),
+    variants: hatSizes(24.99),
   },
   {
     slug: "sf-behavioral-health-dad-hat",
@@ -107,7 +114,7 @@ export const products: Product[] = [
     category: "hats",
     collection: "bay-area",
     badge: "New",
-    variants: oneSize(24.99),
+    variants: hatSizes(24.99),
   },
 ];
 
