@@ -25,9 +25,14 @@ export function CollectionsTeaser() {
         </Link>
       </div>
 
-      <div className="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-4">
+      {/* Mobile: edge-to-edge swipe carousel; sm and up: the original grid. */}
+      <div className="no-scrollbar -mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-px-5 px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
         {collections.map((c, i) => (
-          <Reveal key={c.slug} delay={(i % 4) * 70} className="min-w-0">
+          <Reveal
+            key={c.slug}
+            delay={(i % 4) * 70}
+            className="w-[62%] min-w-0 shrink-0 snap-start sm:w-auto"
+          >
             <Link href="/brands" className="group block">
               <ProductImage
                 src={c.image}
