@@ -1,23 +1,18 @@
-// Mock product data. Structured to mirror a future Shopify data source so the
-// UI can swap to a real backend without shape changes.
-//
-// product photography. Cards render a branded placeholder frame until a path
-// (e.g. "/products/sffd-tee.jpg" under /public) is filled in here.
 
 export type ProductVariant = {
   id: string;
-  title: string; 
-  price: number; 
+  title: string; // e.g. size or color, "M" / "Navy"
+  price: number; // in USD
 };
 
 export type Product = {
   slug: string;
   title: string;
-  price: number;
-  image: string; 
-  category: string; 
-  collection?: string; 
-  badge?: string; 
+  price: number; // base/display price in USD
+  image: string; // path under /public or remote URL; "" = use placeholder
+  category: string; // e.g. "headwear", "hoodies", "tees"
+  collection?: string; // department or brand collection slug
+  badge?: string; // small merchandising flag, e.g. "New", "Best seller"
   variants: ProductVariant[];
 };
 
@@ -32,7 +27,8 @@ const oneSize = (price: number): ProductVariant[] => [
   { id: "os", title: "One size", price },
 ];
 
-
+// Hats use their own sizing system — adjustable (One Size, S/M, L/XL) rather
+// than the apparel S–2XL scale.
 const hatSizes = (price: number): ProductVariant[] => [
   { id: "one-size", title: "One Size", price },
   { id: "sm", title: "S/M", price },
@@ -118,6 +114,12 @@ export const products: Product[] = [
   },
 ];
 
+// Future mapper (@wix/stores collection → Collection):
+//   slug  ← collection.slug
+//   title ← collection.name
+//   blurb ← collection.description
+//   image ← collection.media?.mainMedia?.image?.url
+//   kind  ← not a Wix concept; ours to assign per collection (department vs. brand)
 export type Collection = {
   slug: string;
   title: string;

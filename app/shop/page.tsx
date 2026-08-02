@@ -2,7 +2,9 @@ import Link from "next/link";
 import { products } from "@/lib/data/products";
 import { categoryGroups } from "@/lib/data/categoryGroups";
 import { brands, brandGroups } from "@/lib/data/brands";
-import { ShopFilters, priceRanges } from "@/components/shop/ShopFilters";
+import { ShopFilters } from "@/components/shop/ShopFilters";
+import { FilterDisclosure } from "@/components/shop/FilterDisclosure";
+import { priceRanges } from "@/lib/data/priceRanges";
 
 export default async function ShopPage({
   searchParams,
@@ -75,7 +77,8 @@ export default async function ShopPage({
       <p className="mt-2 text-ash">{heading}</p>
 
       <div className="mt-8 grid grid-cols-1 gap-10 sm:grid-cols-[200px_1fr]">
-        <aside className="flex flex-col gap-8">
+        <aside>
+          <FilterDisclosure>
           <div>
             <h2 className="text-sm font-medium uppercase tracking-wide text-ash">
               Shop
@@ -134,9 +137,13 @@ export default async function ShopPage({
           <div className="border-t border-line pt-8">
             <ShopFilters />
           </div>
+          </FilterDisclosure>
         </aside>
 
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+        <div
+          id="shop-products"
+          className="grid scroll-mt-24 grid-cols-2 gap-6 sm:grid-cols-3"
+        >
           {filtered.length === 0 && (
             <p className="text-sm text-ash">No products match these filters.</p>
           )}

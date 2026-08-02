@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-
-const priceRanges = [
-  { id: "0-25", label: "$0 – $25", min: 0, max: 25 },
-  { id: "25-50", label: "$25 – $50", min: 25, max: 50 },
-  { id: "50-100", label: "$50 – $100", min: 50, max: 100 },
-];
+import { priceRanges } from "@/lib/data/priceRanges";
 
 const sizeOptions = ["S", "M", "L", "XL", "2XL"];
 const hatSizeOptions = ["One Size", "S/M", "L/XL", "7", "7 1/8", "7 1/4", "7 3/8", "7 1/2", "7 5/8"];
@@ -113,5 +108,3 @@ export function ShopFilters() {
     </div>
   );
 }
-
-export { priceRanges };

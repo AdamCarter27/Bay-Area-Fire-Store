@@ -6,7 +6,7 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP);
 
-const SERVICES = ["Embroidery", "Screen printing", "Heat press"];
+const SERVICES = ["Stickers", "Screen printing", "Heat press", "Embroidery"];
 
 const ITEM_HEIGHT = 64; // px — must match the h-16 rows below
 const VISIBLE_ROWS = 5;
@@ -45,10 +45,6 @@ export default function VerticalTextCarousel() {
         });
         tl.to({}, { duration: HOLD });
       });
-
-      // One cycle lands exactly one copy further down, where every visible
-      // row — centered and ghosted — repeats the starting arrangement, so
-      // resetting the list is invisible.
       tl.set(listRef.current, { y: yFor(START) });
     });
   });
@@ -56,7 +52,7 @@ export default function VerticalTextCarousel() {
   return (
     <section className="flex flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-8">
       <p className="sr-only">
-        We customize: embroidery, screen printing, and heat pressing
+        We customize: embroidery, screen printing, heat pressing, and stickers
       </p>
 
       <h2
