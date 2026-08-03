@@ -18,7 +18,7 @@ export function ProductCard({
   return (
     <Link
       href={`/product/${product.slug}`}
-      className="group flex flex-col focus-visible:outline-none"
+      className="group flex flex-col"
     >
       <div className="relative">
         <ProductImage

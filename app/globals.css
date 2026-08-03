@@ -52,25 +52,43 @@
   --radius-lg: var(--radius-lg);
 }
 
-/* ---- Base ---- */
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-body), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
+/* ---- Base ----
+   These live in @layer base on purpose: unlayered rules outrank every Tailwind
+   utility, which would silently kill any utility that touches the same
+   property (text-wrap, tracking, font-family, outline). In the base layer they
+   are defaults a utility can override — which is what a base style should be. */
+@layer base {
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 
-::selection {
-  background: var(--signal);
-  color: var(--on-signal);
-}
+  ::selection {
+    background: var(--signal);
+    color: var(--on-signal);
+  }
 
-/* Consistent, visible focus for keyboard users across the store */
-:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 2px;
-  border-radius: 2px;
+  /* Consistent, visible focus for keyboard users across the store */
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), Georgia, serif;
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
 }
 
 /* Applies only on devices whose primary input can hover (mouse/trackpad).
@@ -89,18 +107,6 @@ body {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
-}
-
-h1,
-h2,
-h3 {
-  font-family: var(--font-display), Georgia, serif;
-  text-wrap: balance;
-  letter-spacing: -0.02em;
-}
-
-p {
-  text-wrap: pretty;
 }
 
 /* ============================================================
