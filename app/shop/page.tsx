@@ -4,7 +4,15 @@ import { categoryGroups } from "@/lib/data/categoryGroups";
 import { brands, brandGroups } from "@/lib/data/brands";
 import { ShopFilters } from "@/components/shop/ShopFilters";
 import { FilterDisclosure } from "@/components/shop/FilterDisclosure";
+import { ShopSearch } from "@/components/shop/ShopSearch";
 import { priceRanges } from "@/lib/data/priceRanges";
+
+/*
+ * Every word typed has to appear somewhere in the product's searchable text —
+ */
+function matchesQuery(haystack: string, terms: string[]) {
+  return terms.every((term) => haystack.includes(term));
+}
 
 export default async function ShopPage({
   searchParams,
@@ -16,6 +24,7 @@ export default async function ShopPage({
     price?: string;
     size?: string;
     hatSize?: string;
+    q?: string;
   }>;
 }) {
   const {
@@ -25,6 +34,7 @@ export default async function ShopPage({
     price: priceParam,
     size: sizeParam,
     hatSize: hatSizeParam,
+    q: queryParam,
   } = await searchParams;
 
   const activeGroup = categoryGroups.find((g) => g.slug === groupSlug);
@@ -33,8 +43,26 @@ export default async function ShopPage({
   const activePriceIds = priceParam?.split(",").filter(Boolean) ?? [];
   const activeSizes = sizeParam?.split(",").filter(Boolean) ?? [];
   const activeHatSizes = hatSizeParam?.split(",").filter(Boolean) ?? [];
+  const query = queryParam?.trim() ?? "";
+  // Hyphens become spaces on both sides of the comparison so "t-shirt" and
+  // "t shirt" behave the same, and slugs like "sffd-hockey" stay searchable.
+  const queryTerms = query
+    .toLowerCase()
+    .replace(/-/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
 
   let filtered = products;
+
+  if (queryTerms.length > 0) {
+    filtered = filtered.filter((p) => {
+      const brandLabel = brands.find((b) => b.slug === p.collection)?.label ?? "";
+      const haystack = `${p.title} ${p.category} ${p.collection ?? ""} ${brandLabel}`
+        .toLowerCase()
+        .replace(/-/g, " ");
+      return matchesQuery(haystack, queryTerms);
+    });
+  }
 
   if (activeGroup) {
     filtered = filtered.filter((p) => activeGroup.categories.includes(p.category));
@@ -71,10 +99,34 @@ export default async function ShopPage({
     ? `Showing: ${activeGroup.label}`
     : "Browse our full collection.";
 
+  // The sidebar links carry the search term forward so filtering and searching
+  // compose — and so the search input never disagrees with the URL behind it.
+  const withQuery = (href: string) =>
+    query ? `${href}${href.includes("?") ? "&" : "?"}q=${encodeURIComponent(query)}` : href;
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-      <h1 className="font-display text-3xl font-semibold text-ink">Shop</h1>
-      <p className="mt-2 text-ash">{heading}</p>
+      {/* Stacked on mobile; on wider screens the search sits alongside the
+          heading rather than pushing the grid down. Top-aligned so the result
+          count grows downward — bottom alignment would shove the input upward
+          the moment the count appeared, mid-keystroke. */}
+      <div className="sm:flex sm:items-start sm:gap-10">
+        <div className="sm:shrink-0">
+          <h1 className="font-display text-3xl font-semibold text-ink">Shop</h1>
+          <p className="mt-2 text-ash">{heading}</p>
+        </div>
+
+        <div className="mt-6 max-w-md sm:mt-0 sm:w-full sm:flex-1">
+          <ShopSearch initialQuery={query} />
+          {query && (
+            <p className="mt-2 text-sm text-ash" aria-live="polite">
+              {filtered.length}{" "}
+              {filtered.length === 1 ? "result" : "results"} for &ldquo;{query}
+              &rdquo;
+            </p>
+          )}
+        </div>
+      </div>
 
       <div className="mt-8 grid grid-cols-1 gap-10 sm:grid-cols-[200px_1fr]">
         <aside>
@@ -85,7 +137,7 @@ export default async function ShopPage({
             </h2>
             <nav className="mt-4 flex flex-col gap-2 text-sm">
               <Link
-                href="/shop"
+                href={withQuery("/shop")}
                 className={
                   !activeGroup && !activeBrandGroup && !activeBrand
                     ? "font-medium text-ink underline"
@@ -97,7 +149,7 @@ export default async function ShopPage({
               {categoryGroups.map((group) => (
                 <Link
                   key={group.slug}
-                  href={`/shop?group=${group.slug}`}
+                  href={withQuery(`/shop?group=${group.slug}`)}
                   className={
                     activeGroup?.slug === group.slug
                       ? "font-medium text-ink underline"
@@ -118,7 +170,7 @@ export default async function ShopPage({
               {brandGroups.map((group) => (
                 <Link
                   key={group.slug}
-                  href={`/shop?brandGroup=${group.slug}`}
+                  href={withQuery(`/shop?brandGroup=${group.slug}`)}
                   className={
                     activeBrandGroup?.slug === group.slug
                       ? "font-medium text-ink underline"
@@ -145,7 +197,13 @@ export default async function ShopPage({
           className="grid scroll-mt-24 grid-cols-2 gap-6 sm:grid-cols-3"
         >
           {filtered.length === 0 && (
-            <p className="text-sm text-ash">No products match these filters.</p>
+            // col-span-full so the message reads as a sentence across the grid
+            // rather than wrapping inside a single product column.
+            <p className="col-span-full text-sm text-ash">
+              {query
+                ? `Nothing matches “${query}” with these filters.`
+                : "No products match these filters."}
+            </p>
           )}
           {filtered.map((product) => (
             <Link
