@@ -4,8 +4,12 @@ import Link from "next/link";
 import { useCart } from "@/components/cart/CartContext";
 
 export function CartLink({ light }: { light: boolean }) {
-  const { items } = useCart();
-  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+  const { items, hydrated } = useCart();
+  // Hold the count back until the saved cart is read, so a returning shopper
+  // sees "Cart" then "Cart (3)" rather than a count that appears to reset.
+  const count = hydrated
+    ? items.reduce((sum, item) => sum + item.quantity, 0)
+    : 0;
 
   return (
     <Link
