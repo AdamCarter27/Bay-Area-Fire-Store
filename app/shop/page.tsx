@@ -15,6 +15,7 @@ export default async function ShopPage({
     brand?: string;
     price?: string;
     size?: string;
+    hatSize?: string;
   }>;
 }) {
   const {
@@ -23,6 +24,7 @@ export default async function ShopPage({
     brand: brandSlug,
     price: priceParam,
     size: sizeParam,
+    hatSize: hatSizeParam,
   } = await searchParams;
 
   const activeGroup = categoryGroups.find((g) => g.slug === groupSlug);
@@ -30,6 +32,7 @@ export default async function ShopPage({
   const activeBrand = brands.find((b) => b.slug === brandSlug);
   const activePriceIds = priceParam?.split(",").filter(Boolean) ?? [];
   const activeSizes = sizeParam?.split(",").filter(Boolean) ?? [];
+  const activeHatSizes = hatSizeParam?.split(",").filter(Boolean) ?? [];
 
   let filtered = products;
 
@@ -52,6 +55,11 @@ export default async function ShopPage({
   if (activeSizes.length > 0) {
     filtered = filtered.filter((p) =>
       p.variants.some((v) => activeSizes.includes(v.title))
+    );
+  }
+  if (activeHatSizes.length > 0) {
+    filtered = filtered.filter((p) =>
+      p.variants.some((v) => activeHatSizes.includes(v.title))
     );
   }
 
