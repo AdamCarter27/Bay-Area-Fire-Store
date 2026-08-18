@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
   ReactNode,
 } from "react";
-import type { Product, ProductVariant } from "@/lib/data/products";
+import type { Product, ProductVariant } from "@/lib/data/types";
 
 export type CartItem = {
   slug: string;

@@ -4,8 +4,8 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
 
-export function FeaturedCollection() {
-  const products = getFeatured(8);
+export async function FeaturedCollection() {
+  const products = await getFeatured(8);
 
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
