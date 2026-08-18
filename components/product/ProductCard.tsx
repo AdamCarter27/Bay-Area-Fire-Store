@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Product } from "@/lib/data/products";
+import type { Product } from "@/lib/data/types";
 import { ProductImage } from "./ProductImage";
 
 const priceFmt = new Intl.NumberFormat("en-US", {

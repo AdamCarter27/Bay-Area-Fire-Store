@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { collections } from "@/lib/data/products";
+import { getCollections } from "@/lib/data/products";
 import { ProductImage } from "@/components/product/ProductImage";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
 
-export function CollectionsTeaser() {
+export async function CollectionsTeaser() {
+  const collections = await getCollections();
+
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-20 sm:px-8 sm:py-24">
       <div className="flex flex-wrap items-end justify-between gap-4">

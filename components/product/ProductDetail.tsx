@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Product } from "@/lib/data/products";
+import type { Product } from "@/lib/data/types";
 import { useCart } from "@/components/cart/CartContext";
 
 export function ProductDetail({ product }: { product: Product }) {

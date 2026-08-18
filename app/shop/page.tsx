@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { products } from "@/lib/data/products";
+import { getProducts } from "@/lib/data/products";
 import { categoryGroups } from "@/lib/data/categoryGroups";
 import { brands, brandGroups } from "@/lib/data/brands";
 import { ShopFilters } from "@/components/shop/ShopFilters";
@@ -52,7 +52,7 @@ export default async function ShopPage({
     .split(/\s+/)
     .filter(Boolean);
 
-  let filtered = products;
+  let filtered = await getProducts();
 
   if (queryTerms.length > 0) {
     filtered = filtered.filter((p) => {
