@@ -24,7 +24,7 @@ export function ProductCard({
         <ProductImage
           src={product.image}
           alt={product.title}
-          label={product.category}
+          label={product.categories[0]}
           priority={priority}
           className="aspect-[4/5] w-full rounded-lg border border-line transition-colors group-hover:border-line-strong"
         />
@@ -40,7 +40,7 @@ export function ProductCard({
       </h3>
       <div className="mt-1 flex items-center justify-between gap-2">
         <span className="text-xs uppercase tracking-wide text-ash">
-          {product.category}
+          {product.categories[0]}
         </span>
         <span className="text-sm font-medium tabular-nums text-ink-soft">
           {priceFmt.format(product.price)}

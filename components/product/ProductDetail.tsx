@@ -16,7 +16,7 @@ export function ProductDetail({ product }: { product: Product }) {
         Product photo
       </div>
       <div>
-        <p className="text-xs capitalize text-ash">{product.category}</p>
+        <p className="text-xs capitalize text-ash">{product.categories[0]}</p>
         <h1 className="mt-1 font-display text-2xl font-semibold text-ink">
           {product.title}
         </h1>

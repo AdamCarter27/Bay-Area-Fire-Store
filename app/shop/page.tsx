@@ -56,8 +56,10 @@ export default async function ShopPage({
 
   if (queryTerms.length > 0) {
     filtered = filtered.filter((p) => {
-      const brandLabel = brands.find((b) => b.slug === p.collection)?.label ?? "";
-      const haystack = `${p.title} ${p.category} ${p.collection ?? ""} ${brandLabel}`
+      const brandLabels = p.collections
+        .map((slug) => brands.find((b) => b.slug === slug)?.label ?? "")
+        .join(" ");
+      const haystack = `${p.title} ${p.categories.join(" ")} ${p.collections.join(" ")} ${brandLabels}`
         .toLowerCase()
         .replace(/-/g, " ");
       return matchesQuery(haystack, queryTerms);
@@ -65,13 +67,15 @@ export default async function ShopPage({
   }
 
   if (activeGroup) {
-    filtered = filtered.filter((p) => activeGroup.categories.includes(p.category));
+    filtered = filtered.filter((p) =>
+      p.categories.some((c) => activeGroup.categories.includes(c))
+    );
   }
   if (activeBrand) {
-    filtered = filtered.filter((p) => p.collection === activeBrand.slug);
+    filtered = filtered.filter((p) => p.collections.includes(activeBrand.slug));
   } else if (activeBrandGroup) {
-    filtered = filtered.filter(
-      (p) => p.collection && activeBrandGroup.brands.includes(p.collection)
+    filtered = filtered.filter((p) =>
+      p.collections.some((c) => activeBrandGroup.brands.includes(c))
     );
   }
   if (activePriceIds.length > 0) {
@@ -219,7 +223,7 @@ export default async function ShopPage({
                   </span>
                 )}
               </div>
-              <p className="mt-3 text-xs capitalize text-ash">{product.category}</p>
+              <p className="mt-3 text-xs capitalize text-ash">{product.categories[0]}</p>
               <h3 className="mt-1 font-medium text-ink group-hover:underline">
                 {product.title}
               </h3>
