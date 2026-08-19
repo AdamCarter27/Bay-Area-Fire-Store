@@ -35,7 +35,7 @@ export async function CollectionsTeaser() {
             delay={(i % 4) * 70}
             className="w-[62%] min-w-0 shrink-0 snap-start sm:w-auto"
           >
-            <Link href="/brands" className="group block">
+            <Link href={`/shop?brand=${c.slug}`} className="group block">
               <ProductImage
                 src={c.image}
                 alt={c.title}

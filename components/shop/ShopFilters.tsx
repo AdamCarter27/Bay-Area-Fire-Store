@@ -4,9 +4,6 @@ import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { priceRanges } from "@/lib/data/priceRanges";
 
-const sizeOptions = ["S", "M", "L", "XL", "2XL"];
-const hatSizeOptions = ["One Size", "S/M", "L/XL", "7", "7 1/8", "7 1/4", "7 3/8", "7 1/2", "7 5/8"];
-
 function FilterSection({
   title,
   defaultOpen = true,
@@ -33,7 +30,20 @@ function FilterSection({
   );
 }
 
-export function ShopFilters() {
+/*
+ * Every size list is derived from the live catalog by the shop page and passed
+ * in — never hardcoded here. The owner types sizes by hand in Wix, so a fixed
+ * list drifts out of sync and silently offers filters that match nothing.
+ */
+export function ShopFilters({
+  sizeOptions,
+  hatSizeOptions,
+  youthSizeOptions,
+}: {
+  sizeOptions: string[];
+  hatSizeOptions: string[];
+  youthSizeOptions: string[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -41,8 +51,13 @@ export function ShopFilters() {
   const activePrices = searchParams.get("price")?.split(",").filter(Boolean) ?? [];
   const activeSizes = searchParams.get("size")?.split(",").filter(Boolean) ?? [];
   const activeHatSizes = searchParams.get("hatSize")?.split(",").filter(Boolean) ?? [];
+  const activeYouthSizes = searchParams.get("youthSize")?.split(",").filter(Boolean) ?? [];
 
-  function toggleValue(key: "price" | "size" | "hatSize", value: string, current: string[]) {
+  function toggleValue(
+    key: "price" | "size" | "hatSize" | "youthSize",
+    value: string,
+    current: string[]
+  ) {
     const next = current.includes(value)
       ? current.filter((v) => v !== value)
       : [...current, value];
@@ -74,6 +89,7 @@ export function ShopFilters() {
         </div>
       </FilterSection>
 
+      {sizeOptions.length > 0 && (
       <FilterSection title="Size">
         <div className="flex flex-col gap-2.5 text-sm">
           {sizeOptions.map((size) => (
@@ -89,7 +105,9 @@ export function ShopFilters() {
           ))}
         </div>
       </FilterSection>
+      )}
 
+      {hatSizeOptions.length > 0 && (
       <FilterSection title="Hat Size" defaultOpen={false}>
         <div className="flex flex-col gap-2.5 text-sm">
           {hatSizeOptions.map((size) => (
@@ -105,6 +123,25 @@ export function ShopFilters() {
           ))}
         </div>
       </FilterSection>
+      )}
+
+      {youthSizeOptions.length > 0 && (
+      <FilterSection title="Youth Size" defaultOpen={false}>
+        <div className="flex flex-col gap-2.5 text-sm">
+          {youthSizeOptions.map((size) => (
+            <label key={size} className="flex items-center gap-2.5 text-ink-soft">
+              <input
+                type="checkbox"
+                checked={activeYouthSizes.includes(size)}
+                onChange={() => toggleValue("youthSize", size, activeYouthSizes)}
+                className="h-4 w-4 rounded border-line accent-ink"
+              />
+              {size}
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+      )}
     </div>
   );
 }

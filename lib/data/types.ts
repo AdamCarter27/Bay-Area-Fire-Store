@@ -9,6 +9,7 @@ export type ProductVariant = {
   id: string; // Wix variant ID once live — the cart resolves purchases by it
   title: string; // e.g. size or color, "M" / "Navy"
   price: number; // in USD
+  inStock: boolean; // false = sold out; the option stays visible but unbuyable
 };
 
 // Mapper lives in lib/wix/get-prod.ts (@wix/stores product → Product):
@@ -19,7 +20,10 @@ export type ProductVariant = {
 //   image       ← product.media?.mainMedia?.image?.url
 //   categories  ← collectionIds → collection names → wixCategoryMap
 //   collections ← collectionIds → collection names → wixBrandMap
-//   badge       ← product.ribbon
+//   badge       ← product.ribbon, falling back to the "New Arrivals" collection
+//   description ← product.description, stripped of Wix's markup
+//   inStock     ← product.stock?.inStock
+//   sizes       ← variant choices on a size axis, run through normalizeSize()
 //   variants    ← product.variants flattened; Wix models options × choices as a
 //                 matrix (size AND color), so the mapper owns that flattening
 export type Product = {
@@ -36,6 +40,13 @@ export type Product = {
   categories: string[]; // e.g. ["hoodies"], ["tees", "youth"]
   collections: string[]; // department or brand slugs, e.g. ["sffd"]
   badge?: string; // small merchandising flag, e.g. "New", "Best seller"
+  description?: string; // plain text; absent when the catalog has no copy
+  inStock: boolean; // false = every variant sold out
+  // Canonical, filterable size tokens ("M", "2XL", "L/XL") derived from the
+  // variant choices — the raw catalog spells the same size a half-dozen ways,
+  // so the shop filter matches on this rather than on variant titles. Empty for
+  // products with no size axis (stickers, coins, flags).
+  sizes: string[];
   variants: ProductVariant[];
 };
 
