@@ -5,7 +5,16 @@ import { brands, brandGroups } from "@/lib/data/brands";
 import { ShopFilters } from "@/components/shop/ShopFilters";
 import { FilterDisclosure } from "@/components/shop/FilterDisclosure";
 import { ShopSearch } from "@/components/shop/ShopSearch";
+import { ProductCard } from "@/components/product/ProductCard";
 import { priceRanges } from "@/lib/data/priceRanges";
+import { isHatSize, isYouthSize, sortSizes } from "@/lib/wix/size-normalize";
+
+/*
+ * The live catalog is 256 products. Rendering all of them is a slow, unusable
+ * wall on mobile, so the grid pages server-side through ?show= — filtering
+ * always runs over the whole catalog, only the render is capped.
+ */
+const PAGE_SIZE = 60;
 
 /*
  * Every word typed has to appear somewhere in the product's searchable text —
@@ -24,7 +33,9 @@ export default async function ShopPage({
     price?: string;
     size?: string;
     hatSize?: string;
+    youthSize?: string;
     q?: string;
+    show?: string;
   }>;
 }) {
   const {
@@ -34,7 +45,9 @@ export default async function ShopPage({
     price: priceParam,
     size: sizeParam,
     hatSize: hatSizeParam,
+    youthSize: youthSizeParam,
     q: queryParam,
+    show: showParam,
   } = await searchParams;
 
   const activeGroup = categoryGroups.find((g) => g.slug === groupSlug);
@@ -43,6 +56,7 @@ export default async function ShopPage({
   const activePriceIds = priceParam?.split(",").filter(Boolean) ?? [];
   const activeSizes = sizeParam?.split(",").filter(Boolean) ?? [];
   const activeHatSizes = hatSizeParam?.split(",").filter(Boolean) ?? [];
+  const activeYouthSizes = youthSizeParam?.split(",").filter(Boolean) ?? [];
   const query = queryParam?.trim() ?? "";
   // Hyphens become spaces on both sides of the comparison so "t-shirt" and
   // "t shirt" behave the same, and slugs like "sffd-hockey" stay searchable.
@@ -52,7 +66,20 @@ export default async function ShopPage({
     .split(/\s+/)
     .filter(Boolean);
 
-  let filtered = await getProducts();
+  const allProducts = await getProducts();
+
+  /*
+   * Filter options come from the catalog itself rather than a hardcoded list,
+   * split by size family so hat sizes never appear under apparel. Derived from
+   * the unfiltered catalog on purpose: the options a shopper sees shouldn't
+   * shift underneath them as they narrow things down.
+   */
+  const everySize = sortSizes([...new Set(allProducts.flatMap((p) => p.sizes))]);
+  const sizeOptions = everySize.filter((s) => !isHatSize(s) && !isYouthSize(s));
+  const hatSizeOptions = everySize.filter(isHatSize);
+  const youthSizeOptions = everySize.filter(isYouthSize);
+
+  let filtered = allProducts;
 
   if (queryTerms.length > 0) {
     filtered = filtered.filter((p) => {
@@ -84,16 +111,41 @@ export default async function ShopPage({
       ranges.some((r) => p.price >= r.min && p.price <= r.max)
     );
   }
-  if (activeSizes.length > 0) {
+  // Sizes match the product's normalized tokens, not its variant titles — a
+  // live variant is titled "Black / X-large", which no filter value equals.
+  const activeSizeTokens = [...activeSizes, ...activeHatSizes, ...activeYouthSizes];
+  if (activeSizeTokens.length > 0) {
     filtered = filtered.filter((p) =>
-      p.variants.some((v) => activeSizes.includes(v.title))
+      p.sizes.some((size) => activeSizeTokens.includes(size))
     );
   }
-  if (activeHatSizes.length > 0) {
-    filtered = filtered.filter((p) =>
-      p.variants.some((v) => activeHatSizes.includes(v.title))
-    );
+
+  // Buyable product leads; sold-out stays browsable at the end rather than
+  // vanishing, since the owner restocks the same designs.
+  filtered = [...filtered].sort(
+    (a, b) => Number(b.inStock) - Number(a.inStock)
+  );
+
+  const shown = Math.max(PAGE_SIZE, Number(showParam) || 0);
+  const visible = filtered.slice(0, shown);
+  const hasMore = filtered.length > visible.length;
+
+  // "Load more" keeps every active filter and only grows the page size.
+  const loadMoreParams = new URLSearchParams();
+  for (const [key, value] of Object.entries({
+    group: groupSlug,
+    brandGroup: brandGroupSlug,
+    brand: brandSlug,
+    price: priceParam,
+    size: sizeParam,
+    hatSize: hatSizeParam,
+    youthSize: youthSizeParam,
+    q: query || undefined,
+  })) {
+    if (value) loadMoreParams.set(key, value);
   }
+  loadMoreParams.set("show", String(shown + PAGE_SIZE));
+  const loadMoreHref = `/shop?${loadMoreParams.toString()}#shop-products`;
 
   const heading = activeBrand
     ? `Showing: ${activeBrand.label}`
@@ -191,45 +243,55 @@ export default async function ShopPage({
           </div>
 
           <div className="border-t border-line pt-8">
-            <ShopFilters />
+            <ShopFilters
+              sizeOptions={sizeOptions}
+              hatSizeOptions={hatSizeOptions}
+              youthSizeOptions={youthSizeOptions}
+            />
           </div>
           </FilterDisclosure>
         </aside>
 
-        <div
-          id="shop-products"
-          className="grid scroll-mt-24 grid-cols-2 gap-6 sm:grid-cols-3"
-        >
-          {filtered.length === 0 && (
-            // col-span-full so the message reads as a sentence across the grid
-            // rather than wrapping inside a single product column.
-            <p className="col-span-full text-sm text-ash">
-              {query
-                ? `Nothing matches “${query}” with these filters.`
-                : "No products match these filters."}
-            </p>
+        <div>
+          <div
+            id="shop-products"
+            className="grid scroll-mt-24 grid-cols-2 gap-6 sm:grid-cols-3"
+          >
+            {visible.length === 0 && (
+              // col-span-full so the message reads as a sentence across the grid
+              // rather than wrapping inside a single product column.
+              <p className="col-span-full text-sm text-ash">
+                {query
+                  ? `Nothing matches “${query}” with these filters.`
+                  : "No products match these filters."}
+              </p>
+            )}
+            {visible.map((product, i) => (
+              <ProductCard
+                key={product.slug}
+                product={product}
+                // The first row is above the fold on every breakpoint.
+                priority={i < 3}
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="mt-12 flex flex-col items-center gap-2">
+              <p className="text-sm text-ash">
+                Showing {visible.length} of {filtered.length}
+              </p>
+              {/* A link, not a button: the page stays server-rendered and the
+                  wider view is shareable. */}
+              <Link
+                href={loadMoreHref}
+                scroll={false}
+                className="rounded-full border border-line-strong px-6 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink"
+              >
+                Load more
+              </Link>
+            </div>
           )}
-          {filtered.map((product) => (
-            <Link
-              key={product.slug}
-              href={`/product/${product.slug}`}
-              className="group rounded-xl border border-line p-4 transition-colors hover:border-line-strong"
-            >
-              <div className="relative flex aspect-square items-center justify-center rounded-lg bg-surface text-sm text-ash">
-                Product photo
-                {product.badge && (
-                  <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-1 text-xs text-paper">
-                    {product.badge}
-                  </span>
-                )}
-              </div>
-              <p className="mt-3 text-xs capitalize text-ash">{product.categories[0]}</p>
-              <h3 className="mt-1 font-medium text-ink group-hover:underline">
-                {product.title}
-              </h3>
-              <p className="mt-1 text-sm text-ash">${product.price.toFixed(2)}</p>
-            </Link>
-          ))}
         </div>
       </div>
     </div>

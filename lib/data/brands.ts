@@ -12,7 +12,9 @@ export const brands: Brand[] = [
   { slug: "fire-nuggets", label: "Fire Nuggets" },
   { slug: "front-seat-academy", label: "Front Seat Academy" },
   { slug: "hmb-volunteer-fire", label: "HMB Volunteer Fire Dept." },
+  { slug: "bay-area-fire-store", label: "Bay Area Fire Store Apparel" },
   { slug: "keep-fire-in-your-life", label: "Keep Fire In Your Life | Flow and Move" },
+  { slug: "palo-alto-fire", label: "Palo Alto Fire Dept." },
   { slug: "richmond-fire", label: "Richmond Fire Dept." },
   { slug: "richmond-youth-academy", label: "Richmond Youth Academy" },
   { slug: "sffd", label: "San Francisco Fire Department" },
@@ -41,7 +43,10 @@ export const brandGroups: BrandGroup[] = [
   {
     slug: "fire-departments",
     label: "Fire Departments",
-    brands: ["sffd", "richmond-fire", "colma-fire", "hmb-volunteer-fire", "vallejo-leatherheads"],
+    brands: [
+      "sffd", "richmond-fire", "colma-fire", "palo-alto-fire",
+      "hmb-volunteer-fire", "vallejo-leatherheads",
+    ],
   },
   { slug: "police-departments", label: "Police Departments", brands: ["sfpd"] },
   {

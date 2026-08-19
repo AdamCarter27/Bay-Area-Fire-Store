@@ -6,23 +6,28 @@
 
 import type { Collection, Product, ProductVariant } from "./types";
 
+const APPAREL_SIZES = ["S", "M", "L", "XL", "2XL"];
+
 const sizes = (base: number): ProductVariant[] =>
-  ["S", "M", "L", "XL", "2XL"].map((s, i) => ({
+  APPAREL_SIZES.map((s, i) => ({
     id: s.toLowerCase(),
     title: s,
     price: base + (i === 4 ? 3 : 0),
+    inStock: true,
   }));
 
 const oneSize = (price: number): ProductVariant[] => [
-  { id: "os", title: "One size", price },
+  { id: "os", title: "One size", price, inStock: true },
 ];
 
 // Hats use their own sizing system — adjustable (One Size, S/M, L/XL) rather
 // than the apparel S–2XL scale.
+const HAT_SIZES = ["One Size", "S/M", "L/XL"];
+
 const hatSizes = (price: number): ProductVariant[] => [
-  { id: "one-size", title: "One Size", price },
-  { id: "sm", title: "S/M", price },
-  { id: "lxl", title: "L/XL", price },
+  { id: "one-size", title: "One Size", price, inStock: true },
+  { id: "sm", title: "S/M", price, inStock: true },
+  { id: "lxl", title: "L/XL", price, inStock: true },
 ];
 
 export const mockProducts: Product[] = [
@@ -35,6 +40,8 @@ export const mockProducts: Product[] = [
     categories: ["hoodies"],
     collections: ["bay-area"],
     badge: "Best seller",
+    inStock: true,
+    sizes: APPAREL_SIZES,
     variants: sizes(60),
   },
   {
@@ -45,6 +52,8 @@ export const mockProducts: Product[] = [
     image: "",
     categories: ["tees"],
     collections: ["bay-area"],
+    inStock: true,
+    sizes: APPAREL_SIZES,
     variants: sizes(35),
   },
   {
@@ -56,6 +65,8 @@ export const mockProducts: Product[] = [
     categories: ["tees"],
     collections: ["sffd"],
     badge: "Best seller",
+    inStock: true,
+    sizes: APPAREL_SIZES,
     variants: sizes(20),
   },
   {
@@ -66,6 +77,8 @@ export const mockProducts: Product[] = [
     image: "",
     categories: ["hats"],
     collections: ["bay-area"],
+    inStock: true,
+    sizes: HAT_SIZES,
     variants: hatSizes(29.99),
   },
   {
@@ -77,6 +90,8 @@ export const mockProducts: Product[] = [
     categories: ["hoodies"],
     collections: ["bay-area"],
     badge: "New",
+    inStock: true,
+    sizes: APPAREL_SIZES,
     variants: sizes(49.99),
   },
   {
@@ -87,6 +102,8 @@ export const mockProducts: Product[] = [
     image: "",
     categories: ["tees"],
     collections: ["bay-area"],
+    inStock: true,
+    sizes: APPAREL_SIZES,
     variants: sizes(29.99),
   },
   {
@@ -97,6 +114,8 @@ export const mockProducts: Product[] = [
     image: "",
     categories: ["hats"],
     collections: ["bay-area"],
+    inStock: true,
+    sizes: HAT_SIZES,
     variants: hatSizes(24.99),
   },
   {
@@ -108,6 +127,8 @@ export const mockProducts: Product[] = [
     categories: ["hats"],
     collections: ["bay-area"],
     badge: "New",
+    inStock: true,
+    sizes: HAT_SIZES,
     variants: hatSizes(24.99),
   },
 ];

@@ -26,12 +26,22 @@ export function ProductCard({
           alt={product.title}
           label={product.categories[0]}
           priority={priority}
-          className="aspect-[4/5] w-full rounded-lg border border-line transition-colors group-hover:border-line-strong"
+          className={`aspect-[4/5] w-full rounded-lg border border-line transition-colors group-hover:border-line-strong ${
+            product.inStock ? "" : "opacity-60"
+          }`}
         />
-        {product.badge && (
-          <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-[0.7rem] font-semibold text-ink shadow-sm backdrop-blur-sm">
-            {product.badge}
+        {/* Sold out outranks merchandising: a shopper needs to know the item is
+            unavailable before they need to know it is new. */}
+        {!product.inStock ? (
+          <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-[0.7rem] font-semibold text-ash shadow-sm backdrop-blur-sm">
+            Sold out
           </span>
+        ) : (
+          product.badge && (
+            <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-[0.7rem] font-semibold text-ink shadow-sm backdrop-blur-sm">
+              {product.badge}
+            </span>
+          )
         )}
       </div>
 

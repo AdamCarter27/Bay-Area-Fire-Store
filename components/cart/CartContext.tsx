@@ -13,6 +13,11 @@ import type { Product, ProductVariant } from "@/lib/data/types";
 export type CartItem = {
   slug: string;
   title: string;
+  // Wix catalog item ID, carried from Product.wixId. Wix's checkout resolves a
+  // line item by catalogReference.catalogItemId + the variant ID — never by
+  // slug or title — so the cart has to hold it from the moment an item is
+  // added, not look it up again at checkout. Empty string for mock products.
+  wixId: string;
   variantId: string;
   variantTitle: string;
   price: number;
@@ -37,9 +42,10 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | null>(null);
 
-// Versioned so a future change to CartItem's shape can bump the key rather than
-// migrating carts written by an older build.
-const STORAGE_KEY = "bafs.cart.v1";
+// Versioned so a change to CartItem's shape bumps the key rather than migrating
+// carts written by an older build. v2 added wixId — a v1 cart has no way to
+// reach Wix checkout, so those carts are dropped instead of carried forward.
+const STORAGE_KEY = "bafs.cart.v2";
 
 export const MAX_QUANTITY = 99;
 
@@ -62,6 +68,7 @@ function parseStoredCart(raw: string | null): CartItem[] {
       return (
         typeof candidate.slug === "string" &&
         typeof candidate.title === "string" &&
+        typeof candidate.wixId === "string" &&
         typeof candidate.variantId === "string" &&
         typeof candidate.variantTitle === "string" &&
         typeof candidate.price === "number" &&
@@ -130,6 +137,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         {
           slug: product.slug,
           title: product.title,
+          wixId: product.wixId,
           variantId: variant.id,
           variantTitle: variant.title,
           price: variant.price,

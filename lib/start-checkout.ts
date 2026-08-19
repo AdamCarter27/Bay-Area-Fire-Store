@@ -9,10 +9,11 @@
 //
 //   1. Create a client: createClient({ modules: { checkout, currentCart },
 //      auth: OAuthStrategy({ clientId }) }) from @wix/sdk + @wix/ecom.
-//   2. Map `payload.items` to Wix line items — catalogReference.catalogItemId
-//      is the Wix product ID and .options carries the variant, so CartItem
-//      needs to start carrying the Wix product/variant IDs when the catalog
-//      swap lands (see lib/data/products.ts).
+//   2. Map `payload.items` to Wix line items. CartItem already carries what
+//      that needs: catalogReference.catalogItemId is `item.wixId` and
+//      .options.variantId is `item.variantId`, both captured at add-to-cart.
+//      An item with an empty wixId came from the mock fallback catalog and
+//      cannot be checked out — reject it rather than sending it to Wix.
 //   3. checkout.createCheckout({ lineItems, channelType: WEB }), then
 //      redirect the browser to the returned checkoutUrl.
 //
