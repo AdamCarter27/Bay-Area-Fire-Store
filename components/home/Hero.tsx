@@ -93,7 +93,10 @@ export function Hero() {
             loop
             playsInline
             autoPlay
-            preload="auto"
+            // metadata, not auto: the poster paints immediately and autoplay
+            // still pulls the file, but the browser schedules the 4.9MB
+            // download instead of racing it against every above-fold asset.
+            preload="metadata"
             aria-hidden
           />
         ) : (

@@ -89,7 +89,7 @@ export async function getWixProducts(): Promise<Product[]> {
       slug: p.slug ?? "",
       title,
       price: p.priceData?.price ?? 0,
-      image: p.media?.mainMedia?.image?.url ?? "",
+      image: capImageSize(p.media?.mainMedia?.image?.url ?? ""),
       // Real collection data always wins; the title guess only fills holes.
       categories:
         mappedCategories.length > 0 ? mappedCategories : inferCategories(title),
@@ -162,6 +162,22 @@ function mapSizes(p: WixProduct): string[] {
   }
 
   return sortSizes([...tokens]);
+}
+
+/*
+ * Wix serves product photos at whatever resolution the owner uploaded —
+ * routinely 4032×3024 camera originals — but its media CDN honors the resize
+ * params embedded in the URL path (".../v1/fit/w_4032,h_3024,q_90/file.jpg").
+ * Capping them here means next/image transforms from a ~200KB source instead
+ * of downloading a multi-MB original per size × format. 1200×1500 covers the
+ * largest rendered slot (the PDP at ~45vw). Unrecognized URL shapes pass
+ * through untouched — a full-size image is slow, a broken one is worse.
+ */
+const IMAGE_PARAMS_RE = /\/v1\/(fit|fill)\/w_\d+,h_\d+(,[^/]*)?\//;
+
+function capImageSize(url: string): string {
+  if (!IMAGE_PARAMS_RE.test(url)) return url;
+  return url.replace(IMAGE_PARAMS_RE, "/v1/$1/w_1200,h_1500,q_80/");
 }
 
 // Wix descriptions come back as rich-text markup; the PDP renders plain text.

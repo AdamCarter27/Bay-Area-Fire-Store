@@ -18,11 +18,11 @@ export const backgroundVideo: BackgroundVideo = {
 };
 
 export const culturePhotos: CulturePhoto[] = [
-  { src: "/media/BayAreaFireStoreImage1.png" },
-  { src: "/media/BayAreaFireStoreImage2.png" },
-  { src: "/media/BayAreaFireStoreImage3.png" },
-  { src: "/media/BayAreaFireStoreImage4.png" },
-  { src: "/media/BayAreaFireStoreImage6.png" },
-  { src: "/media/BayAreaFireStoreImage7.png" },
-  { src: "/media/BayAreaFireStoreImage8.png" },
+  { src: "/media/BayAreaFireStoreImage1.jpg" },
+  { src: "/media/BayAreaFireStoreImage2.jpg" },
+  { src: "/media/BayAreaFireStoreImage3.jpg" },
+  { src: "/media/BayAreaFireStoreImage4.jpg" },
+  { src: "/media/BayAreaFireStoreImage6.jpg" },
+  { src: "/media/BayAreaFireStoreImage7.jpg" },
+  { src: "/media/BayAreaFireStoreImage8.jpg" },
 ];
