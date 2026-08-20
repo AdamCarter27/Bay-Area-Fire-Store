@@ -33,7 +33,7 @@ function isYouthAxis(optionKey: string): boolean {
 export const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
 export const YOUTH_SIZE_ORDER = ["2T", "3T", "4T", "Y-XS", "Y-S", "Y-M", "Y-L", "Y-XL"];
 export const HAT_SIZE_ORDER = [
-  "One Size", "S/M", "L/XL", "7", "7 1/8", "7 1/4", "7 3/8", "7 1/2", "7 5/8",
+  "One Size", "7", "7 1/8", "7 1/4", "7 3/8", "7 1/2", "7 5/8",
 ];
 
 const ALPHA_SIZES: Record<string, string> = {
@@ -95,6 +95,12 @@ export function normalizeSize(raw: string, optionKey = "Size"): string | null {
 
 export function isHatSize(token: string): boolean {
   return HAT_SIZE_ORDER.includes(token);
+}
+
+/** True only for genuine fitted-hat measurements (7, 7 1/8, …) — excludes
+ *  "One Size", which is a hat size label but not a real size differentiator. */
+export function isFittedHatSize(token: string): boolean {
+  return token !== "One Size" && HAT_SIZE_ORDER.includes(token);
 }
 
 export function isYouthSize(token: string): boolean {
