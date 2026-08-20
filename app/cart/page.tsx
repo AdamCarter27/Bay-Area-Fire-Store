@@ -1,36 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
-import { MAX_QUANTITY, useCart } from "@/components/cart/CartContext";
-import {calculateTotals } from "@/lib/start-checkout";
+import Image from "next/image";
+import { useCart } from "@/components/cart/CartContext";
+
+const SHIPPING_FLAT_RATE = 8;
+const FREE_SHIPPING_THRESHOLD = 150;
 
 export default function CartPage() {
-  const { items, hydrated, removeFromCart, updateQuantity } = useCart();
-  const { subtotal, shipping } = calculateTotals(items);
-  // Tax is deliberately left off the cart — it depends on the shipping address,
-  // which we don't have until checkout. The checkout summary adds it.
-  const totalBeforeTax = subtotal + shipping;
-
-  // The saved cart hasn't been read yet — say nothing rather than flash
-  // "your cart is empty" at someone who has three things in it.
-  if (!hydrated) {
-    return (
-      <div className="mx-auto max-w-2xl px-5 py-16 sm:px-8">
-        <h1 className="font-display text-3xl font-semibold text-ink">Cart</h1>
-        <p className="mt-4 text-sm text-ash" role="status">
-          Loading your cart…
-        </p>
-      </div>
-    );
-  }
+  const { items, removeFromCart, updateQuantity } = useCart();
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD
+    ? 0
+    : SHIPPING_FLAT_RATE;
+  const total = subtotal + shipping;
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-xl px-5 py-16 text-center sm:px-8">
+      <div className="mx-auto max-w-xl px-5 py-24 text-center sm:px-8">
         <h1 className="font-display text-3xl font-semibold text-ink">Cart</h1>
         <p className="mt-4 text-ash">Your cart is empty.</p>
-        <Link href="/shop" className="mt-6 inline-block text-ink underline">
+        <Link
+          href="/shop"
+          className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper transition-opacity hover:opacity-90"
+        >
           Continue shopping
         </Link>
       </div>
@@ -38,117 +31,129 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
       <h1 className="font-display text-3xl font-semibold text-ink">Cart</h1>
 
-      <ul className="mt-8 flex flex-col gap-4">
-        {items.map((item) => (
-          <li
-            key={`${item.slug}-${item.variantId}`}
-            className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-4"
-          >
-            <div className="min-w-0">
-              <h2 className="font-medium text-ink">
-                <Link href={`/product/${item.slug}`} className="hover:underline">
-                  {item.title}
-                </Link>
-              </h2>
-              <p className="mt-1 text-sm text-ash">
-                {item.variantTitle} · ${item.price.toFixed(2)} each
-              </p>
-              <button
-                type="button"
-                onClick={() => removeFromCart(item.slug, item.variantId)}
-                className="mt-2 text-sm text-ash underline transition-colors hover:text-ink"
+      <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_340px]">
+        {/* Line items */}
+        <div className="flex flex-col divide-y divide-line">
+          {items.map((item) => (
+            <div
+              key={`${item.slug}-${item.variantId}`}
+              className="flex gap-5 py-6 first:pt-0"
+            >
+              <Link
+                href={`/product/${item.slug}`}
+                className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-surface"
               >
-                Remove
-                <span className="sr-only"> {item.title}</span>
-              </button>
-            </div>
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                    sizes="96px"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-[10px] text-ash">
+                    No photo
+                  </div>
+                )}
+              </Link>
 
-            <div className="flex items-center gap-4">
-              <QuantityStepper
-                label={item.title}
-                quantity={item.quantity}
-                onChange={(next) =>
-                  updateQuantity(item.slug, item.variantId, next)
-                }
-              />
-              <p className="w-20 text-right font-medium text-ink">
+              <div className="flex flex-1 flex-col justify-between">
+                <div>
+                  <Link
+                    href={`/product/${item.slug}`}
+                    className="font-medium text-ink hover:underline"
+                  >
+                    {item.title}
+                  </Link>
+                  <p className="mt-1 text-sm text-ash">{item.variantTitle}</p>
+                </div>
+
+                <div className="mt-3 flex items-center gap-4">
+                  <div className="flex items-center rounded-full border border-line">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateQuantity(item.slug, item.variantId, item.quantity - 1)
+                      }
+                      disabled={item.quantity <= 1}
+                      className="flex h-8 w-8 items-center justify-center text-ink disabled:opacity-30"
+                      aria-label="Decrease quantity"
+                    >
+                      –
+                    </button>
+                    <span className="w-6 text-center text-sm text-ink">
+                      {item.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateQuantity(item.slug, item.variantId, item.quantity + 1)
+                      }
+                      className="flex h-8 w-8 items-center justify-center text-ink"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => removeFromCart(item.slug, item.variantId)}
+                    className="text-sm text-ash underline transition-colors hover:text-signal"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <p className="shrink-0 font-medium text-ink">
                 ${(item.price * item.quantity).toFixed(2)}
               </p>
             </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
 
-      <dl className="mt-8 flex flex-col gap-2 text-sm">
-        <div className="flex justify-between">
-          <dt className="text-ash">Subtotal</dt>
-          <dd className="text-ink">${subtotal.toFixed(2)}</dd>
-        </div>
-        <div className="flex justify-between">
-          <dt className="text-ash">Shipping</dt>
-          <dd className="text-ink">
-            {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
-          </dd>
-        </div>
-        <div className="flex justify-between border-t border-line pt-3 text-base">
-          <dt className="font-medium text-ink">Total before tax</dt>
-          <dd className="font-medium text-ink">${totalBeforeTax.toFixed(2)}</dd>
-        </div>
-      </dl>
+        {/* Summary */}
+        <div className="h-fit rounded-xl border border-line p-6">
+          <h2 className="font-display text-lg font-semibold text-ink">Summary</h2>
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-        <Link href="/shop" className="text-sm text-ink underline">
-          Continue shopping
-        </Link>
-        <Button href="/checkout" size="lg">
-          Checkout
-        </Button>
+          <div className="mt-4 flex flex-col gap-3 text-sm">
+            <div className="flex justify-between text-ink-soft">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-ink-soft">
+              <span>Shipping</span>
+              <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+            </div>
+          </div>
+
+          {shipping > 0 && (
+            <p className="mt-3 text-xs text-ash">
+              Add ${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)} more for free shipping.
+            </p>
+          )}
+
+          <div className="mt-4 flex justify-between border-t border-line pt-4 text-base font-semibold text-ink">
+            <span>Total</span>
+            <span>${total.toFixed(2)}</span>
+          </div>
+
+          <button className="mt-6 w-full rounded-full bg-ink py-3 text-sm font-medium text-paper transition-opacity hover:opacity-90">
+            Checkout
+          </button>
+
+          <Link
+            href="/shop"
+            className="mt-3 block text-center text-sm text-ash underline"
+          >
+            Continue shopping
+          </Link>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function QuantityStepper({
-  label,
-  quantity,
-  onChange,
-}: {
-  label: string;
-  quantity: number;
-  onChange: (next: number) => void;
-}) {
-  const stepperButton =
-    "flex h-8 w-8 items-center justify-center text-ink transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:text-ash";
-
-  return (
-    <div className="flex items-center rounded-full border border-line-strong">
-      <button
-        type="button"
-        onClick={() => onChange(quantity - 1)}
-        className={`${stepperButton} rounded-l-full`}
-        aria-label={`Decrease quantity of ${label}`}
-      >
-        −
-      </button>
-      <span
-        aria-live="polite"
-        className="w-8 text-center text-sm tabular-nums text-ink"
-      >
-        {quantity}
-        <span className="sr-only"> of {label} in cart</span>
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(quantity + 1)}
-        disabled={quantity >= MAX_QUANTITY}
-        className={`${stepperButton} rounded-r-full`}
-        aria-label={`Increase quantity of ${label}`}
-      >
-        +
-      </button>
     </div>
   );
 }
