@@ -50,8 +50,6 @@ export function ShopFilters({
 
   const activePrices = searchParams.get("price")?.split(",").filter(Boolean) ?? [];
   const activeSizes = searchParams.get("size")?.split(",").filter(Boolean) ?? [];
-  const activeHatSizes = searchParams.get("hatSize")?.split(",").filter(Boolean) ?? [];
-  const activeYouthSizes = searchParams.get("youthSize")?.split(",").filter(Boolean) ?? [];
 
   function toggleValue(
     key: "price" | "size" | "hatSize" | "youthSize",
@@ -98,42 +96,6 @@ export function ShopFilters({
                 type="checkbox"
                 checked={activeSizes.includes(size)}
                 onChange={() => toggleValue("size", size, activeSizes)}
-                className="h-4 w-4 rounded border-line accent-ink"
-              />
-              {size}
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-      )}
-
-      {hatSizeOptions.length > 0 && (
-      <FilterSection title="Hat Size" defaultOpen={false}>
-        <div className="flex flex-col gap-2.5 text-sm">
-          {hatSizeOptions.map((size) => (
-            <label key={size} className="flex items-center gap-2.5 text-ink-soft">
-              <input
-                type="checkbox"
-                checked={activeHatSizes.includes(size)}
-                onChange={() => toggleValue("hatSize", size, activeHatSizes)}
-                className="h-4 w-4 rounded border-line accent-ink"
-              />
-              {size}
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-      )}
-
-      {youthSizeOptions.length > 0 && (
-      <FilterSection title="Youth Size" defaultOpen={false}>
-        <div className="flex flex-col gap-2.5 text-sm">
-          {youthSizeOptions.map((size) => (
-            <label key={size} className="flex items-center gap-2.5 text-ink-soft">
-              <input
-                type="checkbox"
-                checked={activeYouthSizes.includes(size)}
-                onChange={() => toggleValue("youthSize", size, activeYouthSizes)}
                 className="h-4 w-4 rounded border-line accent-ink"
               />
               {size}

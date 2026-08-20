@@ -2,7 +2,12 @@ import type { products as wixProducts } from "@wix/stores";
 import { wixClient, getWixCollectionMap } from "@/lib/wix/client";
 import type { Product, ProductVariant } from "@/lib/data/types";
 import { wixCategoryMap, wixBrandMap } from "@/lib/wix/collection-mapping";
-import { isSizeAxis, normalizeSize, sortSizes } from "@/lib/wix/size-normalize";
+import {
+  isSizeAxis,
+  normalizeSize,
+  sortSizes,
+  isFittedHatSize,
+} from "@/lib/wix/size-normalize";
 
 /*
  * Maps the live Wix catalog into the UI's Product contract (lib/data/types.ts).
@@ -82,7 +87,15 @@ export async function getWixProducts(): Promise<Product[]> {
       .filter(Boolean);
 
     const title = p.name ?? "";
-    const variants = mapVariants(p);
+
+    // Real collection data always wins; the title guess only fills holes.
+    const categories =
+      mappedCategories.length > 0 ? mappedCategories : inferCategories(title);
+
+    // Computed once here so mapVariants/mapSizes use the same resolved
+    // categories as the rest of the product, instead of re-deriving a guess
+    // from the title themselves.
+    const variants = mapVariants(p, categories);
 
     return {
       wixId: p._id ?? "",
@@ -90,16 +103,14 @@ export async function getWixProducts(): Promise<Product[]> {
       title,
       price: p.priceData?.price ?? 0,
       image: capImageSize(p.media?.mainMedia?.image?.url ?? ""),
-      // Real collection data always wins; the title guess only fills holes.
-      categories:
-        mappedCategories.length > 0 ? mappedCategories : inferCategories(title),
+      categories,
       collections,
       badge:
         p.ribbon ||
         (collectionNames.includes(NEW_ARRIVALS_COLLECTION) ? "New" : undefined),
       description: stripHtml(p.description ?? "") || undefined,
       inStock: p.stock?.inStock ?? true,
-      sizes: mapSizes(p),
+      sizes: mapSizes(p, categories),
       variants,
     };
   });
@@ -118,11 +129,40 @@ async function queryAllProducts() {
   return all;
 }
 
+/*
+ * A hat's variants only represent real, sellable size differences when at
+ * least one choice normalizes to a genuine fitted measurement (7, 7 1/8, …).
+ * Snapback/adjustable hats sometimes carry a stray "Regular"/"X-Large" size
+ * option in Wix (leftover from being cloned off a fitted-hat template) even
+ * though there's only one physical item — those collapse to a single variant.
+ */
+function hasRealHatSizeDifference(p: WixProduct): boolean {
+  return (p.variants ?? []).some((v) =>
+    Object.entries(v.choices ?? {}).some(([key, value]) => {
+      if (!isSizeAxis(key) || typeof value !== "string") return false;
+      const token = normalizeSize(value, key);
+      return token ? isFittedHatSize(token) : false;
+    })
+  );
+}
+
+function collapseVariants(
+  p: WixProduct,
+  categories: string[]
+): NonNullable<WixProduct["variants"]> {
+  const variants = p.variants ?? [];
+  const isHat = categories.includes("hats");
+  if (isHat && !hasRealHatSizeDifference(p)) return [];
+  return variants;
+}
+
 // Wix models options as a matrix (size AND color); the UI's single axis is the
 // flattened combination, e.g. "M / Navy". Variant IDs matter — the cart's
 // catalogReference resolves a purchase by them, not by title.
-function mapVariants(p: WixProduct): ProductVariant[] {
-  if (!p.manageVariants || !p.variants || p.variants.length === 0) {
+function mapVariants(p: WixProduct, categories: string[]): ProductVariant[] {
+  const variants = collapseVariants(p, categories);
+
+  if (!p.manageVariants || variants.length === 0) {
     return [
       {
         id: "one-size",
@@ -134,7 +174,7 @@ function mapVariants(p: WixProduct): ProductVariant[] {
     ];
   }
 
-  return p.variants.map((v) => {
+  return variants.map((v) => {
     const choiceValues = Object.values(v.choices ?? {}) as string[];
     return {
       id: v._id ?? "",
@@ -150,10 +190,10 @@ function mapVariants(p: WixProduct): ProductVariant[] {
  * — a product with Color and Embroidery options but no size contributes none,
  * which is correct: it has nothing to filter by.
  */
-function mapSizes(p: WixProduct): string[] {
+function mapSizes(p: WixProduct, categories: string[]): string[] {
   const tokens = new Set<string>();
 
-  for (const v of p.variants ?? []) {
+  for (const v of collapseVariants(p, categories)) {
     for (const [key, value] of Object.entries(v.choices ?? {})) {
       if (!isSizeAxis(key) || typeof value !== "string") continue;
       const token = normalizeSize(value, key);
