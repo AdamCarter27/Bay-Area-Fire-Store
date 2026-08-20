@@ -1,6 +1,7 @@
 export type Brand = {
   slug: string;
   label: string;
+  logo?: string;
 };
 
 export const brands: Brand[] = [
@@ -8,25 +9,25 @@ export const brands: Brand[] = [
   { slug: "bay-area-fire-conference", label: "2026 Bay Area Fire Conference Apparel" },
   { slug: "asian-firefighters-association", label: "Asian Firefighters Association" },
   { slug: "colma-fire", label: "Colma Fire District" },
-  { slug: "fight-fire-get-dirty", label: "Fight Fire, Get Dirty" },
-  { slug: "fire-nuggets", label: "Fire Nuggets" },
+  { slug: "fight-fire-get-dirty", label: "Fight Fire, Get Dirty", logo: "/media/FightFireGetDirty.jpeg" },
+  { slug: "fire-nuggets", label: "Fire Nuggets", logo: "/media/FireNuggets.PNG" },
   { slug: "front-seat-academy", label: "Front Seat Academy" },
   { slug: "hmb-volunteer-fire", label: "HMB Volunteer Fire Dept." },
   { slug: "bay-area-fire-store", label: "Bay Area Fire Store Apparel" },
   { slug: "keep-fire-in-your-life", label: "Keep Fire In Your Life | Flow and Move" },
   { slug: "palo-alto-fire", label: "Palo Alto Fire Dept." },
   { slug: "richmond-fire", label: "Richmond Fire Dept." },
-  { slug: "richmond-youth-academy", label: "Richmond Youth Academy" },
+  { slug: "richmond-youth-academy", label: "Richmond Youth Academy", logo: "/media/RichmondYouthAcademy.jpg"},
   { slug: "sffd", label: "San Francisco Fire Department" },
   { slug: "sfpd", label: "San Francisco Police Department" },
   { slug: "sf-behavioral-health", label: "SF Behavioral Health Foundation" },
   { slug: "sf-fire-ner-tamid", label: "SF Fire Ner Tamid Society" },
   { slug: "sffcpf", label: "SFFCPF" },
   { slug: "sffd-cross-axe", label: "SFFD Cross Axe" },
-  { slug: "sffd-golf-club", label: "SFFD Golf Club" },
+  { slug: "sffd-golf-club", label: "SFFD Golf Club", logo: "/media/SFFDGolfClub.jpg"},
   { slug: "sffd-hockey", label: "SFFD Hockey Club" },
   { slug: "sffd-k9", label: "SFFD K9" },
-  { slug: "sffd-los-bomberos", label: "SFFD Los Bomberos" },
+  { slug: "sffd-los-bomberos", label: "SFFD Los Bomberos", logo: "/media/SanFranBomberos.jpeg"},
   { slug: "sffd-station-apparel", label: "SFFD Station Apparel" },
   { slug: "street-crisis", label: "Street Crisis | Community Paramedics" },
   { slug: "ufsw", label: "United Fire Service Women Apparel" },

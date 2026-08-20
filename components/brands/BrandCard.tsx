@@ -13,7 +13,7 @@ export function BrandCard({
     <Link href={`/shop?brand=${brand.slug}`} className="group flex flex-col">
       <div className="relative overflow-hidden rounded-lg border border-line transition-colors group-hover:border-line-strong">
         <ProductImage
-          src=""
+          src={brand.logo ?? ""}
           alt={brand.label}
           label={brand.label}
           sizes="(min-width: 640px) 25vw, 45vw"
