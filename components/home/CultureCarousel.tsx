@@ -134,7 +134,7 @@ return (
           >
             <ProductImage
               src={photo.src}
-              alt="photo"
+              alt={photo.alt}
               sizes="(min-width: 1024px) 31vw, (min-width: 640px) 47vw, 82vw"
               className="aspect-[4/3] w-full rounded-lg border border-line"
             />
