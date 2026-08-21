@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CartProvider } from "@/components/cart/CartContext";
+import { AddedToCartPopup } from "@/components/cart/AddedToCartPopUp";
 import "./globals.css";
 
 // Display: a refined variable serif for the editorial headlines.
@@ -111,6 +112,7 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
+          <AddedToCartPopup />
         </CartProvider>
       </body>
     </html>
