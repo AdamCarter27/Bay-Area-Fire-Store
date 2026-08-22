@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { FiCheckCircle } from "react-icons/fi";
 import { Button } from "@/components/ui/Button";
+import { Field, inputBase, labelBase } from "@/components/ui/Field";
 import {
+  OTHER_VALUE,
   SERVICE_OPTIONS,
   submitCustomOrder,
   type CustomOrderPayload,
 } from "@/lib/submit-custom-order";
-
-const inputBase =
-  "w-full rounded-md border border-line-strong bg-paper px-3.5 py-2.5 text-sm text-ink placeholder:text-ash transition-colors hover:border-ash aria-invalid:border-signal";
-
-const labelBase = "mb-1.5 block text-xs font-medium tracking-[0.05em] text-ink";
 
 type FormValues = {
   name: string;
@@ -57,12 +54,16 @@ function validate(values: FormValues): Partial<Record<FieldName, string>> {
   if (!/^\S+@\S+\.\S+$/.test(values.email.trim()))
     errors.email = "Enter a valid email address.";
   if (!values.phone.trim()) errors.phone = "Enter a phone number.";
+  // Wix validates this as a real dialable number, so catch an obviously wrong
+  // one here rather than letting the submission fail after they hit send.
+  else if (values.phone.replace(/\D/g, "").length < 10)
+    errors.phone = "Enter a full phone number, including area code.";
   if (!values.completionDate || values.completionDate < todayISO())
     errors.completionDate = "Choose a completion date — today or later.";
+  if (values.services.includes(OTHER_VALUE) && !values.otherService.trim())
+    errors.otherService = "Tell us what you have in mind.";
   if (values.services.length === 0)
     errors.services = "Select at least one service.";
-  if (values.services.includes("Other") && !values.otherService.trim())
-    errors.otherService = "Tell us what you have in mind.";
   const qty = Number(values.quantity);
   if (!values.quantity.trim() || !Number.isInteger(qty) || qty < 1)
     errors.quantity = "Enter a quantity of at least 1.";
@@ -78,7 +79,9 @@ export function CustomOrderForm() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success">(
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >(
     "idle"
   );
 
@@ -137,7 +140,7 @@ export function CustomOrderForm() {
         organization: values.organization.trim() || undefined,
         completionDate: values.completionDate,
         services: values.services,
-        otherService: values.services.includes("Other")
+        otherService: values.services.includes(OTHER_VALUE)
           ? values.otherService.trim()
           : undefined,
         quantity: Number(values.quantity),
@@ -147,10 +150,13 @@ export function CustomOrderForm() {
       };
       await submitCustomOrder(payload);
       setStatus("success");
-    } catch {
-      // The stub never rejects; when the real Wix call lands, surface a
-      // form-level error here instead of silently resetting.
-      setStatus("idle");
+    } catch (error) {
+      // Never fall back to "idle" here: an idle form after a failed submit is
+      // indistinguishable from one the visitor never sent, and they'd have no
+      // idea their request vanished. Show it, keep their answers, and give
+      // them a way to reach the shop that doesn't depend on this form.
+      console.error("[custom-order] submission failed", error);
+      setStatus("error");
     }
   };
 
@@ -289,13 +295,13 @@ export function CustomOrderForm() {
         <div className="mt-1 grid gap-0.5 sm:grid-cols-2">
           {SERVICE_OPTIONS.map((service, i) => (
             <label
-              key={service}
+              key={service.value}
               className="flex items-center gap-2.5 py-1 text-sm text-ink"
             >
               <input
                 type="checkbox"
                 className="h-4 w-4 shrink-0 accent-[var(--ink)]"
-                checked={values.services.includes(service)}
+                checked={values.services.includes(service.value)}
                 aria-invalid={i === 0 && errors.services ? true : undefined}
                 aria-describedby={
                   i === 0 && errors.services ? "services-error" : undefined
@@ -304,12 +310,12 @@ export function CustomOrderForm() {
                   setValue(
                     "services",
                     e.target.checked
-                      ? [...values.services, service]
-                      : values.services.filter((s) => s !== service)
+                      ? [...values.services, service.value]
+                      : values.services.filter((s) => s !== service.value)
                   )
                 }
               />
-              {service}
+              {service.label}
             </label>
           ))}
         </div>
@@ -319,7 +325,9 @@ export function CustomOrderForm() {
           </p>
         )}
 
-        {values.services.includes("Other") && (
+        {/* His form's "Other" opens a free-text box; what gets typed here is
+            submitted in place of "Other" itself. */}
+        {values.services.includes(OTHER_VALUE) && (
           <div className="mt-3 max-w-sm">
             <Field
               label="What else can we make for you?"
@@ -350,7 +358,10 @@ export function CustomOrderForm() {
         <input
           id="design-file"
           type="file"
-          accept="image/*,.pdf"
+          // Mirrors the file types his Wix form's field accepts: Video, Image,
+          // and Document. Offering a type he hasn't enabled means the file
+          // uploads and the submission then fails validation.
+          accept="image/*,video/*,.pdf"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="block w-full text-xs text-ash file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-transparent file:px-4 file:py-2 file:text-xs file:font-medium file:text-ink file:transition-colors hover:file:border-ink"
         />
@@ -402,6 +413,26 @@ export function CustomOrderForm() {
         )}
       </div>
 
+      {status === "error" && (
+        <div
+          role="alert"
+          className="mt-8 rounded-md border border-signal/40 bg-signal/5 px-4 py-3.5 text-sm text-ink"
+        >
+          <p className="font-medium">We couldn&apos;t send your request.</p>
+          <p className="mt-1 text-ink-soft">
+            Nothing was submitted — your answers are still here, so you can try
+            again. If it keeps failing, email us at{" "}
+            <a
+              href="mailto:Info@bayareafirestore.com"
+              className="underline underline-offset-2 transition-colors hover:text-signal"
+            >
+              Info@bayareafirestore.com
+            </a>
+            .
+          </p>
+        </div>
+      )}
+
       <div className="mt-10">
         <Button
           type="submit"
@@ -409,52 +440,13 @@ export function CustomOrderForm() {
           size="lg"
           disabled={status === "submitting"}
         >
-          {status === "submitting" ? "Sending…" : "Submit request"}
+          {status === "submitting"
+            ? "Sending…"
+            : status === "error"
+            ? "Try again"
+            : "Submit request"}
         </Button>
       </div>
     </form>
-  );
-}
-
-/*
- * Wires label/control/error together: ids, htmlFor, aria-invalid, and
- * aria-describedby stay consistent so the markup can't lie to a screen
- * reader. Render-prop keeps the actual control fully in the caller's hands.
- */
-function Field({
-  label,
-  name,
-  optional = false,
-  error,
-  children,
-}: {
-  label: string;
-  name: string;
-  optional?: boolean;
-  error?: string;
-  children: (props: {
-    id: string;
-    "aria-invalid": true | undefined;
-    "aria-describedby": string | undefined;
-  }) => ReactNode;
-}) {
-  const errorId = `${name}-error`;
-  return (
-    <div>
-      <label htmlFor={name} className={labelBase}>
-        {label}
-        {optional && <span className="font-normal text-ash"> (optional)</span>}
-      </label>
-      {children({
-        id: name,
-        "aria-invalid": error ? true : undefined,
-        "aria-describedby": error ? errorId : undefined,
-      })}
-      {error && (
-        <p id={errorId} className="mt-1.5 text-xs text-signal-deep">
-          {error}
-        </p>
-      )}
-    </div>
   );
 }
