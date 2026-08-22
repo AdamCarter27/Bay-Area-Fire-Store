@@ -1,13 +1,11 @@
-// Custom order submission — the Wix Forms swap-in point, now live.
+// Custom order submission.
 //
-// Submissions go to the owner's EXISTING custom-order form (the one on
-// bayareafirestore.com/about-4), not to a new form of ours, so requests land in
-// the dashboard inbox he already checks. Nothing here needs a server route: the
-// Wix visitor token is minted from the public client ID and already carries
-// WIX_FORMS.SUBMISSION_CREATE, which covers both the submission and the file
-// upload. Submission *reads* are correctly forbidden to visitors.
+// Posts to the owner's EXISTING custom-order form (the one behind
+// bayareafirestore.com/about-4), so requests land in the dashboard inbox he
+// already checks. The Wix plumbing — auth, file upload, error parsing, phone
+// normalization — lives in lib/wix/forms.ts and is shared with the contact form.
 
-import { wixClient } from "@/lib/wix/client";
+import { submitWixForm, toE164, uploadFormFile } from "@/lib/wix/forms";
 
 /*
  * His live form. If he ever rebuilds it in the Wix editor this ID changes and
@@ -15,10 +13,6 @@ import { wixClient } from "@/lib/wix/client";
  * source, or from Get Form with an admin key.
  */
 export const FORM_ID = "9118588c-3abb-4584-b660-03fea56d66d1";
-
-const SUBMISSIONS_URL =
-  "https://www.wixapis.com/form-submission-service/v4/submissions";
-const MEDIA_UPLOAD_URL_ENDPOINT = `${SUBMISSIONS_URL}/media-upload-url`;
 
 /*
  * The keys of his form's `submissions` map. These are field *targets*, not
@@ -74,128 +68,11 @@ export type CustomOrderPayload = {
   consent: true; // literal true — the form is unsubmittable without it
 };
 
-/*
- * His form validates the phone field as a real, dialable number: it wants
- * E.164 ("+14155550100") and rejects both a bare "4155550100" and a formatted
- * "(415) 555-0100". People type the formatted version, so normalize rather
- * than making them get it right.
- *
- * Anything already carrying a "+" is passed through untouched — that's an
- * international number the visitor typed deliberately, and guessing at it
- * would do more harm than leaving it alone.
- */
-export function toE164(input: string): string {
-  const trimmed = input.trim();
-  if (trimmed.startsWith("+")) return "+" + trimmed.slice(1).replace(/\D/g, "");
-
-  const digits = trimmed.replace(/\D/g, "");
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-
-  // Not a shape we recognize — send the digits with a US prefix and let Wix's
-  // validation reject it, which surfaces as the form's error state.
-  return `+${digits}`;
-}
-
-async function authHeader(): Promise<string> {
-  const tokens = await wixClient.auth.generateVisitorTokens();
-  return tokens.accessToken.value;
-}
-
-/*
- * Wix returns its failure detail in a JSON envelope; surface the useful part so
- * a validation failure says which field it hated instead of "500".
- */
-async function readError(response: Response): Promise<string> {
-  const body = await response.text();
-  try {
-    const parsed = JSON.parse(body);
-    return (
-      parsed.message ||
-      parsed.details?.applicationError?.description ||
-      parsed.details?.validationError?.fieldViolations?.[0]?.description ||
-      body.slice(0, 200)
-    );
-  } catch {
-    return body.slice(0, 200);
-  }
-}
-
-/*
- * The shape his form's file field expects. `fileType` is the file's MIME type
- * ("image/jpeg") — NOT one of the UploadFileFormat enum values (IMAGE/VIDEO/
- * DOCUMENT), which the field rejects with "The declared file type does not
- * match this field".
- */
-type UploadedFile = {
-  fileId: string;
-  displayName: string;
-  url: string;
-  fileType: string;
-};
-
-/*
- * Two-step upload: ask the forms service for a signed URL, then send the bytes
- * to it. This is the forms-scoped endpoint on purpose — the general Media
- * Manager upload API rejects a visitor token outright.
- */
-async function uploadFile(file: File, token: string): Promise<UploadedFile> {
-  const urlResponse = await fetch(MEDIA_UPLOAD_URL_ENDPOINT, {
-    method: "POST",
-    headers: { Authorization: token, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      formId: FORM_ID,
-      filename: file.name,
-      mimeType: file.type || "application/octet-stream",
-    }),
-  });
-
-  if (!urlResponse.ok) {
-    throw new Error(`Could not prepare the file upload: ${await readError(urlResponse)}`);
-  }
-
-  const { uploadUrl } = (await urlResponse.json()) as { uploadUrl: string };
-
-  // The signed URL carries its own auth, so this request must NOT include the
-  // visitor token. The filename rides as a query param per the Upload API.
-  const putResponse = await fetch(
-    `${uploadUrl}?filename=${encodeURIComponent(file.name)}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": file.type || "application/octet-stream" },
-      body: file,
-    }
-  );
-
-  if (!putResponse.ok) {
-    throw new Error(`File upload failed: ${await readError(putResponse)}`);
-  }
-
-  const uploaded = await putResponse.json();
-  // Wix has returned this under a couple of shapes over time; take whichever
-  // is present rather than assuming, and fail loudly if neither is.
-  const fileId: string | undefined =
-    uploaded?.file?.id ?? uploaded?.fileId ?? uploaded?.file?.fileId;
-
-  if (!fileId) {
-    throw new Error("File uploaded but Wix returned no file id");
-  }
-
-  return {
-    fileId,
-    displayName: file.name,
-    url: uploaded?.file?.url ?? "",
-    fileType: file.type || "application/octet-stream",
-  };
-}
-
 export async function submitCustomOrder(
   payload: CustomOrderPayload
 ): Promise<void> {
-  const token = await authHeader();
-
   const uploaded = payload.file
-    ? await uploadFile(payload.file, token)
+    ? await uploadFormFile(FORM_ID, payload.file)
     : undefined;
 
   /*
@@ -227,20 +104,10 @@ export async function submitCustomOrder(
     submissions[TARGET.organization] = payload.organization;
   }
   if (uploaded) {
-    // Always an array — his field is single-file (fileLimit 1), but the value
-    // shape is a list regardless.
+    // Always an array — his field is single-file, but the value shape is a
+    // list regardless.
     submissions[TARGET.file] = [uploaded];
   }
 
-  const response = await fetch(SUBMISSIONS_URL, {
-    method: "POST",
-    headers: { Authorization: token, "Content-Type": "application/json" },
-    body: JSON.stringify({ submission: { formId: FORM_ID, submissions } }),
-  });
-
-  if (!response.ok) {
-    // Must throw: the form shows its success screen on resolve, so swallowing
-    // this would tell the customer their request went through when it didn't.
-    throw new Error(`Submission failed: ${await readError(response)}`);
-  }
+  await submitWixForm(FORM_ID, submissions);
 }

@@ -4,6 +4,7 @@ import { Fraunces, Inter } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CartProvider } from "@/components/cart/CartContext";
 import { AddedToCartPopup } from "@/components/cart/AddedToCartPopUp";
+import { socialLinks } from "@/lib/data/social";
 import "./globals.css";
 
 // Display: a refined variable serif for the editorial headlines.
@@ -85,23 +86,21 @@ export default function RootLayout({
                   </Link>
                 ))}
               </nav>
+              {/* Same URLs the contact page uses — see lib/data/social.ts.
+                  Text labels here rather than icons: the footer column reads as
+                  a list of links, and an icon pair would sit oddly beside it. */}
               <div className="flex gap-4 text-sm">
-                <a
-                  href="https://www.facebook.com/profile.php?id=61568764863734"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-500 hover:text-black dark:hover:text-white"
-                >
-                  Facebook
-                </a>
-                <a
-                  href="https://www.instagram.com/bayareafirestore/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-500 hover:text-black dark:hover:text-white"
-                >
-                  Instagram
-                </a>
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.id}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-ash transition-colors hover:text-ink"
+                  >
+                    {social.label}
+                  </a>
+                ))}
               </div>
             </div>
 

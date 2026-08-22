@@ -1,20 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { FiCheckCircle } from "react-icons/fi";
 import { Button } from "@/components/ui/Button";
+import { Field, inputBase, labelBase } from "@/components/ui/Field";
 import {
   OTHER_VALUE,
   SERVICE_OPTIONS,
   submitCustomOrder,
   type CustomOrderPayload,
 } from "@/lib/submit-custom-order";
-
-const inputBase =
-  "w-full rounded-md border border-line-strong bg-paper px-3.5 py-2.5 text-sm text-ink placeholder:text-ash transition-colors hover:border-ash aria-invalid:border-signal";
-
-const labelBase = "mb-1.5 block text-xs font-medium tracking-[0.05em] text-ink";
 
 type FormValues = {
   name: string;
@@ -452,48 +448,5 @@ export function CustomOrderForm() {
         </Button>
       </div>
     </form>
-  );
-}
-
-/*
- * Wires label/control/error together: ids, htmlFor, aria-invalid, and
- * aria-describedby stay consistent so the markup can't lie to a screen
- * reader. Render-prop keeps the actual control fully in the caller's hands.
- */
-function Field({
-  label,
-  name,
-  optional = false,
-  error,
-  children,
-}: {
-  label: string;
-  name: string;
-  optional?: boolean;
-  error?: string;
-  children: (props: {
-    id: string;
-    "aria-invalid": true | undefined;
-    "aria-describedby": string | undefined;
-  }) => ReactNode;
-}) {
-  const errorId = `${name}-error`;
-  return (
-    <div>
-      <label htmlFor={name} className={labelBase}>
-        {label}
-        {optional && <span className="font-normal text-ash"> (optional)</span>}
-      </label>
-      {children({
-        id: name,
-        "aria-invalid": error ? true : undefined,
-        "aria-describedby": error ? errorId : undefined,
-      })}
-      {error && (
-        <p id={errorId} className="mt-1.5 text-xs text-signal-deep">
-          {error}
-        </p>
-      )}
-    </div>
   );
 }
