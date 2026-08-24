@@ -1,14 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/components/cart/CartContext";
+import { startWixCheckout } from "@/lib/wix/checkout";
 
 const SHIPPING_FLAT_RATE = 8;
 const FREE_SHIPPING_THRESHOLD = 150;
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity } = useCart();
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
+
+  /*
+   * Payment happens on Wix, not here. This hands the line items over and sends
+   * the browser to the checkout Wix builds for them.
+   */
+  const handleCheckout = async () => {
+    setCheckoutError(null);
+    setRedirecting(true);
+    try {
+      const url = await startWixCheckout(items);
+      // Not router.push: this leaves our app for a Wix-hosted page.
+      window.location.assign(url);
+    } catch (error) {
+      console.error("[checkout] could not start Wix checkout", error);
+      setCheckoutError(
+        error instanceof Error && error.message
+          ? error.message
+          : "We couldn't start checkout. Please try again."
+      );
+      setRedirecting(false);
+    }
+  };
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD
     ? 0
@@ -142,9 +168,27 @@ export default function CartPage() {
             <span>${total.toFixed(2)}</span>
           </div>
 
-          <button className="mt-6 w-full rounded-full bg-ink py-3 text-sm font-medium text-paper transition-opacity hover:opacity-90">
-            Checkout
+          {checkoutError && (
+            <p
+              role="alert"
+              className="mt-4 rounded-md border border-signal/40 bg-signal/5 px-3 py-2.5 text-xs text-ink"
+            >
+              {checkoutError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleCheckout}
+            disabled={redirecting}
+            className="mt-6 w-full rounded-full bg-ink py-3 text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {redirecting ? "Taking you to checkout…" : "Checkout"}
           </button>
+
+          <p className="mt-3 text-center text-xs text-ash">
+            Shipping and tax are calculated at checkout.
+          </p>
 
           <Link
             href="/shop"

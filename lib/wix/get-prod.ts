@@ -23,6 +23,14 @@ import {
 // Wix caps a query page at 100 items and `find()` returns only the first page.
 const PAGE_SIZE = 100;
 
+/*
+ * The variant ID we invent for products whose variants Wix doesn't manage, so
+ * the UI always has something to select. It is NOT a real Wix variant — the
+ * checkout mapper has to strip it rather than send it on (see
+ * lib/wix/checkout.ts), or eCommerce rejects the whole order.
+ */
+export const ONE_SIZE_VARIANT_ID = "one-size";
+
 type WixProduct = wixProducts.Product;
 
 /*
@@ -163,11 +171,24 @@ function mapVariants(p: WixProduct, categories: string[]): ProductVariant[] {
   const variants = collapseVariants(p, categories);
 
   if (!p.manageVariants || variants.length === 0) {
+    /*
+     * Collapsing is a display decision — an adjustable snapback shouldn't show
+     * a size picker — but the line item underneath still has to name a real
+     * Wix variant. Send a managed product to checkout without one and Wix
+     * can't resolve it: the line comes back with no name and the order totals
+     * $0. So when Wix does manage this product's variants, carry the first
+     * in-stock one's ID while still labelling it "One size".
+     */
+    const underlying =
+      (p.variants ?? []).find((v) => v.stock?.inStock) ?? (p.variants ?? [])[0];
+    const realId = p.manageVariants ? underlying?._id : undefined;
+
     return [
       {
-        id: "one-size",
+        id: realId || ONE_SIZE_VARIANT_ID,
         title: "One size",
-        price: p.priceData?.price ?? 0,
+        price:
+          underlying?.variant?.priceData?.price ?? p.priceData?.price ?? 0,
         // An unmanaged product has no per-variant stock, only the product's.
         inStock: p.stock?.inStock ?? true,
       },
