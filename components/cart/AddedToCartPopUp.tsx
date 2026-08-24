@@ -53,8 +53,11 @@ export function AddedToCartPopup() {
         >
           View cart ({count})
         </Link>
+        {/* Goes to the cart rather than straight to Wix: checkout leaves the
+            site entirely, and firing that from a popup that auto-dismisses
+            after five seconds is too easy to trigger by accident. */}
         <Link
-          href="/checkout"
+          href="/cart"
           onClick={clearLastAdded}
           className="rounded-full bg-ink px-4 py-2 text-center text-sm font-medium text-paper hover:opacity-90"
         >

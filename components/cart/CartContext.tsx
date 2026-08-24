@@ -7,6 +7,12 @@ export type CartItem = {
   slug: string;
   title: string;
   image: string;
+  // Wix catalog item ID, carried from Product.wixId. Wix's checkout resolves a
+  // line item by catalogReference.catalogItemId + the variant ID — never by
+  // slug or title — so the cart has to hold it from the moment an item is
+  // added rather than look it up again at checkout. "" for mock-catalog items,
+  // which lib/wix/checkout.ts refuses rather than sending on.
+  wixId: string;
   variantId: string;
   variantTitle: string;
   price: number;
@@ -25,7 +31,12 @@ type CartContextType = {
 };
 
 const CartContext = createContext<CartContextType | null>(null);
-const STORAGE_KEY = "cart";
+/*
+ * Versioned: carts saved before wixId existed can't reach Wix checkout, so
+ * bumping the key drops them instead of leaving someone with a cart that looks
+ * fine and then refuses to check out.
+ */
+const STORAGE_KEY = "cart.v2";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -57,6 +68,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       slug: product.slug,
       title: product.title,
       image: product.image,
+      wixId: product.wixId,
       variantId: variant.id,
       variantTitle: variant.title,
       price: variant.price,
