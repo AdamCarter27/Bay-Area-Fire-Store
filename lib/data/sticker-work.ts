@@ -3,8 +3,7 @@
 // "" renders a branded placeholder frame until a real photo is filled in.
 
 export const stickerWork: { src: string }[] = [
-  { src: "" },
-  { src: "" },
-  { src: "" },
-  { src: "" },
+  { src: "/media/sticker15.jpeg" },
+  { src: "/media/sticker3.jpeg" },
+  { src: "/media/sticker4.jpeg" },
 ];
