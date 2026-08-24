@@ -11,6 +11,7 @@ import { CartLink } from "@/components/cart/CartLink";
 const navLinks = [
   { href: "/brands", label: "Brands" },
   { href: "/custom-order", label: "Custom Order Form" },
+  { href: "/custom-order/stickers", label: "Custom Stickers" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -45,8 +46,6 @@ export function SiteHeader() {
 
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-5 py-4 sm:px-8">
         <Link href="/" aria-label="Bay Area Fire Store — home" className="flex items-center">
-          {/* Logo art is white; invert it to dark once the header turns solid
-              on scroll so it reads on the paper background. */}
           <Image
             src="/media/BayAreaFireStoreLogo.avif"
             alt="Bay Area Fire Store"
