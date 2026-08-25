@@ -5,9 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/components/cart/CartContext";
 import { startWixCheckout } from "@/lib/wix/checkout";
-
-const SHIPPING_FLAT_RATE = 8;
-const FREE_SHIPPING_THRESHOLD = 150;
+import {
+  FREE_SHIPPING_THRESHOLD,
+  shippingFor,
+} from "@/lib/data/shipping";
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity } = useCart();
@@ -36,9 +37,10 @@ export default function CartPage() {
     }
   };
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD
-    ? 0
-    : SHIPPING_FLAT_RATE;
+  // Mirrors the owner's Wix shipping profile so this figure matches what the
+  // checkout actually charges — see lib/data/shipping.ts. Tax is deliberately
+  // absent: it depends on the delivery address, which Wix collects.
+  const shipping = shippingFor(subtotal);
   const total = subtotal + shipping;
 
   if (items.length === 0) {
@@ -163,10 +165,14 @@ export default function CartPage() {
             </p>
           )}
 
-          <div className="mt-4 flex justify-between border-t border-line pt-4 text-base font-semibold text-ink">
-            <span>Total</span>
+          {/* "Estimated" because tax is still to come — quoting a bare "Total"
+              here and then charging more at Wix is the kind of surprise that
+              loses the sale at the last step. */}
+          <div className="mt-4 flex items-baseline justify-between border-t border-line pt-4 text-base font-semibold text-ink">
+            <span>Estimated total</span>
             <span>${total.toFixed(2)}</span>
           </div>
+          <p className="mt-1.5 text-xs text-ash">Tax calculated at checkout.</p>
 
           {checkoutError && (
             <p
@@ -187,7 +193,7 @@ export default function CartPage() {
           </button>
 
           <p className="mt-3 text-center text-xs text-ash">
-            Shipping and tax are calculated at checkout.
+            You&apos;ll pay securely on our Wix-hosted checkout.
           </p>
 
           <Link
