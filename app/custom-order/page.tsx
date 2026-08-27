@@ -3,6 +3,13 @@ import { ServiceCards } from "@/components/custom/ServiceCards";
 import { CustomOrderForm } from "@/components/custom/CustomOrderForm";
 import { RecentWork } from "@/components/custom/RecentWork";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Custom Orders",
+  description:
+    "Custom embroidery, screen printing, heat press, patches, and tumblers for Bay Area departments, stations, academies, and teams.",
+};
 
 export default function CustomOrderPage() {
   return (

@@ -3,7 +3,7 @@ import { SplitHeadline } from "@/components/ui/SplitHeadline";
 import { garmentBrands, type GarmentBrand } from "@/lib/data/garmentBrands";
 
 export const metadata: Metadata = {
-  title: "Available Brands — Bay Area Fire Store",
+  title: "Available Brands",
   description:
     "Garment and apparel brands we can customize with embroidery, screen printing, and heat press.",
 };

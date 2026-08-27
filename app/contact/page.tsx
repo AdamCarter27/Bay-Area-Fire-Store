@@ -3,7 +3,7 @@ import { SocialLinks } from "@/components/ui/SocialLinks";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
 
 export const metadata = {
-  title: "Contact — Bay Area Fire Store",
+  title: "Contact",
   description:
     "Questions about an order, a department collection, or a bulk request? Reach the Bay Area Fire Store.",
 };

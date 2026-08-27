@@ -4,6 +4,13 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
 import { BrandJumpNav } from "@/components/brands/BrandJumpNav";
 import { ScrollFadeHeading } from "@/components/brands/ScrollFadeHeading";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Departments & Brands",
+  description:
+    "Shop by department, station, club, or cause — SFFD, Richmond, Colma, Palo Alto, and the Bay Area crews we print and embroider for.",
+};
 
 export default function BrandsPage() {
   return (

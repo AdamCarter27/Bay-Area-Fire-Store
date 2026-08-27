@@ -1,5 +1,15 @@
 import { getWixProducts } from "@/lib/wix/get-prod";
 import { getWixCollectionMap } from "@/lib/wix/client";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Catalog Debug",
+  description:
+    "Internal catalog diagnostics.",
+  // Internal debug route — must not be indexed, and should be deleted before
+  // launch rather than merely hidden.
+  robots: { index: false, follow: false },
+};
 
 /*
  * Dev-only diagnostic for the Wix catalog integration. Not linked from the

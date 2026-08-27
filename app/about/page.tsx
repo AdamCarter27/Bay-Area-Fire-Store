@@ -1,4 +1,12 @@
 import { CultureCarousel } from "@/components/home/CultureCarousel";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Firefighter-owned and Bay Area built since 2024 — who we are and why we started the Bay Area Fire Store.",
+};
+
 export default function AboutPage() {
   return (
     <div>
