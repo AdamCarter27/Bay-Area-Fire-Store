@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getProducts } from "@/lib/data/products";
 import { categoryGroups } from "@/lib/data/categoryGroups";
@@ -21,6 +22,46 @@ const PAGE_SIZE = 60;
  */
 function matchesQuery(haystack: string, terms: string[]) {
   return terms.every((term) => haystack.includes(term));
+}
+
+/*
+ * Filter state lives in the query string, so a shared link like
+ * ?brand=sffd deserves a title that says what it is. The canonical always
+ * points at bare /shop, though: every filtered view is the same catalog in a
+ * different order, and indexing them separately would be duplicate content.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ group?: string; brand?: string; brandGroup?: string; q?: string }>;
+}): Promise<Metadata> {
+  const { group, brand, brandGroup, q } = await searchParams;
+
+  const brandLabel = brands.find((b) => b.slug === brand)?.label;
+  const groupLabel =
+    categoryGroups.find((g) => g.slug === group)?.label ??
+    brandGroups.find((g) => g.slug === brandGroup)?.label;
+
+  const focus = brandLabel ?? groupLabel;
+  const title = q
+    ? `Search: ${q}`
+    : focus
+    ? `${focus}`
+    : "Shop All Products";
+
+  const description = focus
+    ? `${focus} apparel and gear from the Bay Area Fire Store — firefighter-owned, shipped from the Bay Area.`
+    : "Department apparel, headwear, hoodies, tees and accessories for the Bay Area fire service. Firefighter-owned since 2024.";
+
+  return {
+    title,
+    description,
+    alternates: { canonical: "/shop" },
+    openGraph: { title, description, url: "/shop" },
+    // Filtered and searched views are the same catalog resliced — let Google
+    // index the canonical shop page and follow through to the products.
+    robots: q || focus ? { index: false, follow: true } : undefined,
+  };
 }
 
 export default async function ShopPage({

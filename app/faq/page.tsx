@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "FAQ",
+  description:
+    "Answers on shipping times, order tracking, and custom orders at the Bay Area Fire Store.",
+};
+
 const faqs = [
   {
     q: "Q: Why haven't I received any shipping info on my order?",

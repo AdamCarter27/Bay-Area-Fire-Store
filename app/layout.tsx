@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CartProvider } from "@/components/cart/CartContext";
 import { AddedToCartPopup } from "@/components/cart/AddedToCartPopUp";
 import { socialLinks } from "@/lib/data/social";
+import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
 
 // Display: a refined variable serif for the editorial headlines.
@@ -22,10 +23,41 @@ const inter = Inter({
   display: "swap",
 });
 
+/*
+ * Site-wide metadata defaults. Every page sets only its own `title` string and
+ * inherits the rest — the template appends the store name so page titles never
+ * have to repeat it, and openGraph/twitter fall through unless a page (a
+ * product, say) overrides them with something better.
+ *
+ * `metadataBase` resolves relative OG image paths to absolute URLs, which
+ * social scrapers require. The origin itself lives in lib/site-url.ts so the
+ * sitemap and robots.txt resolve against the same one.
+ */
+
+const SITE_NAME = "Bay Area Fire Store";
+const SITE_DESCRIPTION =
+  "Firefighter-owned since 2024. Department apparel, custom embroidery and screen printing, and the brands the Bay Area fire service trusts.";
+
 export const metadata: Metadata = {
-  title: "Bay Area Fire Store — Your Local Source for Bay Area Fire Gear",
-  description:
-    "Firefighter-owned since 2024. Your trusted source for high-quality on- and off-duty apparel, custom embroidery and screen printing, and the brands you trust.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Your Local Source for Bay Area Fire Gear`,
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    title: `${SITE_NAME} — Your Local Source for Bay Area Fire Gear`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — Your Local Source for Bay Area Fire Gear`,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 const footerNav = [

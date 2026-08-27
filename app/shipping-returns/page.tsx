@@ -5,7 +5,7 @@ import {
 } from "@/lib/data/shipping";
 
 export const metadata: Metadata = {
-  title: "Shipping & Returns — Bay Area Fire Store",
+  title: "Shipping & Returns",
   description:
     "Shipping rates, delivery times, and the return and exchange policy for Bay Area Fire Store orders.",
 };

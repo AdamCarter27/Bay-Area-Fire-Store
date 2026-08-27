@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description:
+    "Terms of use, pricing, shipping, and copyright for the Bay Area Fire Store online shop.",
+};
+
 const terms = [
   "All users of this site agree that access to and use of this site are subject to the following terms and conditions and other applicable law. If you do not agree to these terms and conditions, please do not use this site.",
   "The entire content included in this site, including but not limited to text, graphics, photography, or code is copyrighted as a collective work under United States and other copyright laws, and is the property of Bay Area Fire Store.",

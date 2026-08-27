@@ -2,6 +2,13 @@ import { StickerHero } from "@/components/custom/StickerHero";
 import { StickerOrderForm } from "@/components/custom/StickerOrderForm";
 import { StickerRecentWork } from "@/components/custom/StickerRecentWork";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Custom Stickers",
+  description:
+    "Die-cut, kiss-cut, holographic, and clear custom stickers for fire departments, stations, and crews across the Bay Area.",
+};
 
 export default function CustomStickerPage() {
   return (

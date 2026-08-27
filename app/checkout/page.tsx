@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/cart/CheckoutForm";
 
 export const metadata: Metadata = {
-  title: "Checkout — Bay Area Fire Store",
+  title: "Checkout",
   description: "Review your order and check out.",
   // Nothing to index, and a crawler following a cart link into checkout is
   // only noise in search results.

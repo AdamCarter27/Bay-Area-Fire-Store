@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OrderComplete } from "@/components/cart/OrderComplete";
 
 export const metadata: Metadata = {
-  title: "Order confirmed — Bay Area Fire Store",
+  title: "Order confirmed",
   // Nothing to index, and a crawler landing on someone's confirmation is only
   // noise in search results.
   robots: { index: false, follow: false },
