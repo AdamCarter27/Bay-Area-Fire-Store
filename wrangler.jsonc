@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "bay-area-fire-store",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+  // No r2_buckets / services / images bindings: Wix hosts the worker, so none
+  // of a Cloudflare account's storage or image bindings are available. See the
+  // note in open-next.config.ts.
+}
