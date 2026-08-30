@@ -17,7 +17,7 @@ import {
 } from "@/lib/data/sticker-pricing";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart/CartContext";
-
+import { getStickerProduct, findStickerVariant } from "@/lib/wix/sticker-prod";
 const SIZE_OPTIONS = [
   { value: STANDARD_SIZE_LABEL, label: `${STANDARD_SIZE_LABEL} — instant pricing` },
   { value: 'Larger than 3"', label: 'Larger than 3" — custom quote' },
@@ -87,6 +87,7 @@ function validate(values: FormValues): Partial<Record<FieldName, string>> {
 export function StickerOrderForm() {
   const router = useRouter();
   const { addCustomItem } = useCart();
+  const { addToCart } = useCart();
   const [values, setValues] = useState<FormValues>(initialValues);
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
@@ -144,38 +145,47 @@ export function StickerOrderForm() {
       return;
     }
     setStatus("submitting");
-    try{
+    try {
       const payload: StickerOrderPayload = {
-      name: values.name.trim(),
-      email: values.email.trim(),
-      phone: values.phone.trim(),
-      organization: values.organization.trim() || undefined,
-      neededByDate: values.neededByDate,
-      stickerType: values.stickerType,
-      size: values.size,
-      quantity: Number(values.quantity),
-      description: values.description.trim(),
-      file: file ?? undefined,
-      consent: true,
-    };
+        name: values.name.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim(),
+        organization: values.organization.trim() || undefined,
+        neededByDate: values.neededByDate,
+        stickerType: values.stickerType,
+        size: values.size,
+        quantity: Number(values.quantity),
+        description: values.description.trim(),
+        file: file ?? undefined,
+        consent: true,
+      };
 
-    await submitStickerOrder(payload, computedPrice ?? undefined);
+      await submitStickerOrder(payload, computedPrice ?? undefined);
 
-    if (isStandardSize && computedPrice != null) {
-      addCustomItem({
-        title: `Custom Stickers — ${values.stickerType}, ${quantityNum} pcs`,
-        price: computedPrice,
-        quantity: 1,
-      });
-      router.push("/cart");
-      return;
+      if (isStandardSize && computedPrice != null) {
+        const stickerProduct = await getStickerProduct();
+        const variant = stickerProduct
+          ? findStickerVariant(stickerProduct, quantityNum)
+          : undefined;
+
+        if (!stickerProduct || !variant) {
+          console.error("[sticker-order] could not find matching Wix variant", {
+            quantityNum,
+          });
+          setStatus("error");
+          return;
+        }
+
+        addToCart(stickerProduct, variant);
+        router.push("/cart");
+        return;
+      }
+
+      setStatus("success");
+    } catch (error) {
+      console.error("[sticker-order] submission failed", error);
+      setStatus("error");
     }
-
-    setStatus("success");
-  } catch (error) {
-    console.error("[sticker-order] submission failed", error);
-    setStatus("error");
-  }
 };
 
   if (status === "success") {
