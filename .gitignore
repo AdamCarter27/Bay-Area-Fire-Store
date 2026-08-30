@@ -40,3 +40,7 @@ next-env.d.ts
 
 #impeccable
 .impeccable/
+
+# Cloudflare Workers build output (OpenNext adapter) — see open-next.config.ts
+.open-next/
+.wrangler/

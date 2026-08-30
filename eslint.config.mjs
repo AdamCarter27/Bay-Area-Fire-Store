@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Workers build output (OpenNext adapter) — generated bundles big enough
+    // to OOM eslint if it walks them.
+    ".open-next/**",
+    ".wrangler/**",
   ]),
 ]);
 

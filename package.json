@@ -10,23 +10,26 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@wix/ecom": "^1.0.2462",
     "@wix/redirects": "^1.0.125",
     "@wix/sdk": "^1.21.16",
     "@wix/stores": "^1.0.871",
     "gsap": "^3.15.0",
-    "next": "^16.2.11",
+    "next": "^16.3.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.7.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "^16.3.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.127.1"
   }
 }
