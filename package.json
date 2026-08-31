@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:worker": "next build && opennextjs-cloudflare build",
+    "preview:worker": "wrangler dev",
+    "deploy:wix": "wix release",
+    "deploy:cf": "wrangler deploy"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

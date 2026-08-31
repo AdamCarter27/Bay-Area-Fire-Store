@@ -7,15 +7,16 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["10.0.0.66", "10.0.0.*","192.168.1.235"], //for testing
 
   images: {
-    // The live Wix catalog serves every product photo from this host. Without
-    // it next/image refuses the URL outright and the whole grid errors.
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "static.wixstatic.com",
-        pathname: "/media/**",
-      },
-    ],
+    /*
+     * Product photos are resized by the Wix media CDN via params in the URL
+     * path, not by Next's optimizer — see lib/wix/image-loader.ts for why.
+     *
+     * A custom loader bypasses /_next/image entirely, so `remotePatterns` is
+     * no longer needed: that allowlist only ever gated the optimizer, and
+     * nothing now asks it to fetch a remote URL.
+     */
+    loader: "custom",
+    loaderFile: "./lib/wix/image-loader.ts",
   },
 };
 
