@@ -13,7 +13,7 @@ export const brands: Brand[] = [
   { slug: "fire-nuggets", label: "Fire Nuggets", logo: "/media/FireNuggets.PNG" },
   { slug: "front-seat-academy", label: "Front Seat Academy" },
   { slug: "hmb-volunteer-fire", label: "HMB Volunteer Fire Dept." },
-  { slug: "bay-area-fire-store", label: "Bay Area Fire Store Apparel", logo: "/media/BayAreaFireStoreLogo.avif" },
+  { slug: "bay-area-fire-store", label: "Bay Area Fire Store Apparel", logo: "/media/BayAreaFireStoreBrand.jpg" },
   { slug: "keep-fire-in-your-life", label: "Keep Fire In Your Life | Flow and Move" },
   { slug: "palo-alto-fire", label: "Palo Alto Fire Dept." },
   { slug: "richmond-fire", label: "Richmond Fire Dept." },
