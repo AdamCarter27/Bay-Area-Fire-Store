@@ -27,7 +27,6 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: "/brands", changeFrequency: "weekly", priority: 0.8 },
   { url: "/custom-order", changeFrequency: "monthly", priority: 0.8 },
   { url: "/custom-order/brands", changeFrequency: "monthly", priority: 0.6 },
-  { url: "/custom-order/stickers", changeFrequency: "monthly", priority: 0.6 },
   { url: "/about", changeFrequency: "monthly", priority: 0.5 },
   { url: "/contact", changeFrequency: "monthly", priority: 0.5 },
   { url: "/faq", changeFrequency: "monthly", priority: 0.4 },

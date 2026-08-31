@@ -3,6 +3,7 @@ import { StickerOrderForm } from "@/components/custom/StickerOrderForm";
 import { StickerRecentWork } from "@/components/custom/StickerRecentWork";
 import { SplitHeadline } from "@/components/ui/SplitHeadline";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Custom Stickers",
@@ -11,6 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default function CustomStickerPage() {
+  /*
+   * Parked at the owner's request for launch — the page 404s but the code
+   * stays. To relaunch: delete this notFound(), restore the header link in
+   * SiteHeader.tsx and the /custom-order/stickers entry in app/sitemap.ts.
+   */
+  notFound();
+
   return (
     <>
       <StickerHero />
