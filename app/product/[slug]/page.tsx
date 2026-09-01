@@ -1,9 +1,41 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProduct } from "@/lib/data/products";
+import { getProduct, getProducts } from "@/lib/data/products";
 import { ProductDetail } from "@/components/product/ProductDetail";
 
 type Props = { params: Promise<{ slug: string }> };
+
+/*
+ * Prerender every product at build time.
+ *
+ * Product pages are the most-visited pages on the store and were previously
+ * server-rendered on every request. On Cloudflare Workers the free plan allows
+ * 10ms of CPU per request and server-side rendering is exactly the workload
+ * that approaches it, so moving the catalog's biggest slice of traffic onto
+ * prerendered HTML is the cheapest way to stay inside it.
+ *
+ * The build calls the catalog once; the module-scope cache in
+ * lib/data/products.ts then serves all 259 renders from memory, so this costs
+ * one Wix read rather than 259.
+ */
+export async function generateStaticParams() {
+  const products = await getProducts();
+  return products.map((product) => ({ slug: product.slug }));
+}
+
+/*
+ * Prices and stock change on the owner's schedule, so the prerendered HTML has
+ * to refresh: without this a sold-out product would keep offering an Add to
+ * Cart button until the next deploy. Matches CATALOG_TTL_SECONDS.
+ */
+export const revalidate = 300;
+
+/*
+ * Products added to Wix after the last build are not in generateStaticParams.
+ * `true` (the default, stated here because it matters) renders them on demand
+ * instead of 404ing, so the owner adding a product does not require a deploy.
+ */
+export const dynamicParams = true;
 
 const priceFmt = new Intl.NumberFormat("en-US", {
   style: "currency",
