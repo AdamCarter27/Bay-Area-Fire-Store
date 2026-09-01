@@ -5,7 +5,6 @@ export type Brand = {
 };
 
 export const brands: Brand[] = [
-  { slug: "2-eleven-shields", label: "2 Eleven Shields" },
   { slug: "asian-firefighters-association", label: "Asian Firefighters Association", logo: "/media/AsianFire.PNG" },
   { slug: "colma-fire", label: "Colma Fire District", logo:"/media/Colma-Fire.JPG"},
   { slug: "fight-fire-get-dirty", label: "Fight Fire, Get Dirty", logo: "/media/FightFireGetDirty.jpeg" },
@@ -13,14 +12,13 @@ export const brands: Brand[] = [
   { slug: "front-seat-academy", label: "Front Seat Academy", logo: "/media/FrontSeatAcademy.jpeg" },
   { slug: "hmb-volunteer-fire", label: "HMB Volunteer Fire Dept.", logo: "/media/HMB-Volunteer.png" },
   { slug: "bay-area-fire-store", label: "Bay Area Fire Store Apparel", logo: "/media/BayAreaFireStoreBrand.jpg" },
-  { slug: "palo-alto-fire", label: "Palo Alto Fire Dept." },
+  { slug: "palo-alto-fire", label: "Palo Alto Fire Dept.", logo: "/media/Palo-Alto.JPG" },
   { slug: "richmond-fire", label: "Richmond Fire Dept." },
   { slug: "richmond-youth-academy", label: "Richmond Youth Academy", logo: "/media/RichmondYouthAcademy.jpg"},
   { slug: "sffd", label: "San Francisco Fire Department"},
   { slug: "sfpd", label: "San Francisco Police Department", logo: "/media/SFPD.JPEG"},
-  { slug: "sf-behavioral-health", label: "SF Behavioral Health Foundation" },
+  { slug: "sf-behavioral-health", label: "SF Behavioral Health Foundation", logo: "/media/Behave.JPG"},
   { slug: "sf-fire-ner-tamid", label: "SF Fire Ner Tamid Society", logo:"/media/Ner-Tamid.png" },
-  { slug: "sffcpf", label: "SFFCPF" },
   { slug: "sffd-cross-axe", label: "SFFD Cross Axe" },
   { slug: "sffd-golf-club", label: "SFFD Golf Club", logo: "/media/SFFDGolfClub.jpg"},
   { slug: "sffd-k9", label: "SFFD K9", logo: "/media/SFK9.PNG"},
