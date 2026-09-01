@@ -46,7 +46,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lastAdded, setLastAdded] = useState<CartItem | null>(null);
 
   // Read the saved cart once on mount. Until this runs, `hydrated` stays
-  // false so CartLink and CheckoutForm show a loading state instead of a
+  // false so CartLink and the cart page show a loading state instead of a
   // count/cart that would otherwise flash empty on every page load.
   useEffect(() => {
     try {

@@ -7,9 +7,9 @@ import { SITE_URL } from "@/lib/site-url";
  *
  * Two rules decide what belongs here:
  *
- *  1. Only pages we want indexed. /cart, /checkout, /checkout/complete and
- *     /wix-test all set `robots: { index: false }` in their own metadata —
- *     listing them would ask Google to crawl pages we then tell it to drop.
+ *  1. Only pages we want indexed. /cart and /checkout/complete both set
+ *     `robots: { index: false }` in their own metadata — listing them would
+ *     ask Google to crawl pages we then tell it to drop.
  *  2. Only canonical URLs. Every filtered shop view (?brand=, ?group=, ?q=)
  *     canonicalises back to bare /shop, so the sitemap lists /shop once and
  *     lets the crawler reach the rest through the product links.
