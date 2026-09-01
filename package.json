@@ -9,9 +9,8 @@
     "lint": "eslint",
     "build:worker": "next build && opennextjs-cloudflare build",
     "preview:worker": "wrangler dev",
-    "deploy:wix": "wix release",
-    "deploy:cf": "wrangler deploy",
-    "build:wix": "npm run build:worker && rm -rf dist && wrangler deploy --dry-run --outdir dist/server && rm -f dist/server/worker.js.map dist/server/README.md && cp -R .open-next/assets dist/client"
+    "deploy:cf": "opennextjs-cloudflare deploy",
+    "populate:cache": "opennextjs-cloudflare populateCache remote"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -31,7 +30,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@wix/cli": "^1.1.241",
     "eslint": "^9",
     "eslint-config-next": "^16.3.3",
     "tailwindcss": "^4",

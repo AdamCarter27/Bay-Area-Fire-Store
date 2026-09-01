@@ -58,9 +58,15 @@ export async function generateMetadata({
     description,
     alternates: { canonical: "/shop" },
     openGraph: { title, description, url: "/shop" },
-    // Filtered and searched views are the same catalog resliced — let Google
-    // index the canonical shop page and follow through to the products.
-    robots: q || focus ? { index: false, follow: true } : undefined,
+    /*
+     * Filtered and searched views are the same catalog resliced — let Google
+     * index the canonical shop page and follow through to the products.
+     *
+     * Spread rather than `: undefined`, so the unfiltered case omits the key
+     * entirely and inherits the root layout. An explicit `undefined` counts as
+     * setting the field and wiped the layout's preview-build noindex.
+     */
+    ...(q || focus ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
