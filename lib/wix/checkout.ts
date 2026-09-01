@@ -57,6 +57,28 @@ function toLineItems(items: CartItem[]) {
     }));
 }
 
+/*
+ * KNOWN BLOCKER — custom line items do not work with the auth this site uses.
+ *
+ * Wix rejects them with:
+ *   "This action requires the following permission scope:
+ *    Manage eCommerce - Admin Permissions (SCOPE.ECOM.MANAGE...)"
+ *
+ * We authenticate with OAuthStrategy on the public client ID, which mints a
+ * *visitor* token — deliberately, since it is what keeps this build free of
+ * server-side secrets and of a PCI surface. Admin scope is not available to it
+ * at any SDK version, so this is a design constraint, not a bug to patch.
+ *
+ * Verified 2026-08-31: catalog checkout (lineItems) succeeds and redirects;
+ * any cart containing a custom item fails on createCheckout.
+ *
+ * Currently unreachable — the sticker page 404s (app/custom-order/stickers)
+ * and addCustomItem() is only called from the form it renders, so no customer
+ * can create one. Before unparking stickers, this needs a real decision:
+ * either route custom orders through the existing Wix form (as /custom-order
+ * already does) or create real catalog products for sticker configurations so
+ * they go through `lineItems` instead.
+ */
 function toCustomLineItems(items: CartItem[]) {
   return items
     .filter((item) => item.isCustom)
@@ -64,7 +86,9 @@ function toCustomLineItems(items: CartItem[]) {
       quantity: item.quantity,
       price: item.price.toFixed(2),
       productName: { original: item.title },
-      itemType: { preset: "PHYSICAL" },
+      // `as const` so the literal is not widened to `string` inside map() —
+      // Wix types this as an ItemTypePreset enum member, not any string.
+      itemType: { preset: "PHYSICAL" as const },
     }));
 }
 
