@@ -5,7 +5,6 @@ export type Brand = {
 };
 
 export const brands: Brand[] = [
-  { slug: "2-eleven-shields", label: "2 Eleven Shields" },
   { slug: "asian-firefighters-association", label: "Asian Firefighters Association", logo: "/media/AsianFire.PNG" },
   { slug: "colma-fire", label: "Colma Fire District", logo:"/media/Colma-Fire.JPG"},
   { slug: "fight-fire-get-dirty", label: "Fight Fire, Get Dirty", logo: "/media/FightFireGetDirty.jpeg" },
@@ -20,7 +19,6 @@ export const brands: Brand[] = [
   { slug: "sfpd", label: "San Francisco Police Department", logo: "/media/SFPD.JPEG"},
   { slug: "sf-behavioral-health", label: "SF Behavioral Health Foundation" },
   { slug: "sf-fire-ner-tamid", label: "SF Fire Ner Tamid Society", logo:"/media/Ner-Tamid.png" },
-  { slug: "sffcpf", label: "SFFCPF" },
   { slug: "sffd-cross-axe", label: "SFFD Cross Axe" },
   { slug: "sffd-golf-club", label: "SFFD Golf Club", logo: "/media/SFFDGolfClub.jpg"},
   { slug: "sffd-k9", label: "SFFD K9", logo: "/media/SFK9.PNG"},
