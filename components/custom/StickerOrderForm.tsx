@@ -86,7 +86,6 @@ function validate(values: FormValues): Partial<Record<FieldName, string>> {
 
 export function StickerOrderForm() {
   const router = useRouter();
-  const { addCustomItem } = useCart();
   const { addToCart } = useCart();
   const [values, setValues] = useState<FormValues>(initialValues);
   const [file, setFile] = useState<File | null>(null);
