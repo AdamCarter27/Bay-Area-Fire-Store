@@ -13,6 +13,7 @@ import {
   isCartItemUnavailable,
   type CartStock,
 } from "@/lib/data/cart-stock";
+import { isWixMediaUrl } from "@/lib/wix/image-loader";
 
 export function CartView({ stock }: { stock: CartStock }) {
   const { items, removeFromCart, updateQuantity } = useCart();
@@ -113,6 +114,7 @@ export function CartView({ stock }: { stock: CartStock }) {
                 {item.image ? (
                   <Image
                     src={item.image}
+                    unoptimized={!isWixMediaUrl(item.image)}
                     alt={item.title}
                     fill
                     className="object-cover"
