@@ -47,8 +47,17 @@ export function buildCartStock(products: Product[]): CartStock {
  */
 export function isCartItemUnavailable(
   stock: CartStock,
-  item: { slug: string; variantId: string }
+  item: { slug: string; variantId: string; isCustom?: boolean }
 ): boolean {
+  /*
+   * Custom orders (stickers) are made to order and have no catalog entry —
+   * their slug is generated at add-to-cart time (`custom-<timestamp>`), so a
+   * stock lookup would always miss and mark a perfectly valid line sold out.
+   * lib/wix/checkout.ts sends these through `customLineItems` rather than
+   * against the catalog, so there is no inventory to check.
+   */
+  if (item.isCustom) return false;
+
   const entry = stock[item.slug];
   if (!entry || !entry.inStock) return true;
 
