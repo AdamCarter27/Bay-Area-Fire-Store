@@ -86,10 +86,6 @@ export const culturePhotos: CulturePhoto[] = [
     alt: "The hockey club lined up on the ice in an empty arena",
   },
   {
-    src: "/media/BayAreaFireStoreImage5.jpg",
-    alt: "An engine backed into the apparatus bay, gear staged beside it",
-  },
-  {
     src: "/media/BayAreaFireStoreImage7.jpg",
     alt: "Members on stage in dress uniform receiving a department award",
   },
