@@ -10,7 +10,8 @@
     "build:worker": "next build && opennextjs-cloudflare build",
     "preview:worker": "wrangler dev",
     "deploy:wix": "wix release",
-    "deploy:cf": "wrangler deploy"
+    "deploy:cf": "wrangler deploy",
+    "build:wix": "npm run build:worker && rm -rf dist && wrangler deploy --dry-run --outdir dist/server && rm -f dist/server/worker.js.map dist/server/README.md && cp -R .open-next/assets dist/client"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
