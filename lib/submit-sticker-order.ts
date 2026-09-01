@@ -3,8 +3,12 @@
 // There's no separate sticker form in Wix — this reuses the owner's existing
 // custom-order form (same FORM_ID, same dashboard inbox) since the `services`
 // field has no fixed enum and safely accepts a freeform value. Sticker-specific
-// details (type, size) get folded into the description so they show up
-// readably in the dashboard alongside everything else.
+// details (type, size, computed price) get folded into the description so
+// they show up readably in the dashboard alongside everything else.
+//
+// Payment happens through the cart: the form adds a custom line item via
+// CartContext.addCustomItem and the customer checks out from /cart, same as
+// any other item — see StickerOrderForm.tsx.
 
 import { submitWixForm, toE164, uploadFormFile } from "@/lib/wix/forms";
 import { FORM_ID } from "@/lib/submit-custom-order";
@@ -22,8 +26,6 @@ const TARGET = {
   file: "file_upload_f9d8",
 } as const;
 
-// Freeform value — his form's services field has no enum, so this reads
-// clearly in the dashboard without needing a matching checkbox option.
 const STICKER_SERVICE_VALUE = "Custom Stickers";
 
 export const STICKER_TYPE_OPTIONS = [
@@ -34,19 +36,12 @@ export const STICKER_TYPE_OPTIONS = [
   { value: "Not sure", label: "Not sure" },
 ] as const;
 
-export const STICKER_SIZE_OPTIONS = [
-  { value: 'Up to 2"', label: 'Up to 2"' },
-  { value: '2"-4"', label: '2"–4"' },
-  { value: '4"-6"', label: '4"–6"' },
-  { value: "Larger than 6\"", label: 'Larger than 6"' },
-] as const;
-
 export type StickerOrderPayload = {
   name: string;
   email: string;
   phone: string;
   organization?: string;
-  neededByDate: string; // ISO yyyy-mm-dd from <input type="date">
+  neededByDate: string;
   stickerType: string;
   size: string;
   quantity: number;
@@ -56,20 +51,22 @@ export type StickerOrderPayload = {
 };
 
 export async function submitStickerOrder(
-  payload: StickerOrderPayload
+  payload: StickerOrderPayload,
+  computedPrice?: number
 ): Promise<void> {
   const uploaded = payload.file
     ? await uploadFormFile(FORM_ID, payload.file)
     : undefined;
 
-  // Sticker type/size aren't separate targets on his form, so they're folded
-  // into the description text he already reads for every request.
   const fullDescription = [
     `Sticker type: ${payload.stickerType}`,
-    `Approximate size: ${payload.size}`,
+    `Size: ${payload.size}`,
+    computedPrice != null ? `Calculated price: $${computedPrice.toFixed(2)}` : null,
     "",
     payload.description,
-  ].join("\n");
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
 
   const submissions: Record<string, unknown> = {
     [TARGET.name]: payload.name,

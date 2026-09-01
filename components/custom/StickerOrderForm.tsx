@@ -7,10 +7,23 @@ import { Button } from "@/components/ui/Button";
 import { Field, inputBase, labelBase } from "@/components/ui/Field";
 import {
   STICKER_TYPE_OPTIONS,
-  STICKER_SIZE_OPTIONS,
   submitStickerOrder,
   type StickerOrderPayload,
 } from "@/lib/submit-sticker-order";
+import {
+  STANDARD_SIZE_LABEL,
+  QUANTITY_TIERS,
+  getStandardPrice,
+} from "@/lib/data/sticker-pricing";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/components/cart/CartContext";
+import { getStickerProduct, findStickerVariant } from "@/lib/wix/sticker-prod";
+const SIZE_OPTIONS = [
+  { value: STANDARD_SIZE_LABEL, label: `${STANDARD_SIZE_LABEL} — instant pricing` },
+  { value: 'Larger than 3"', label: 'Larger than 3" — custom quote' },
+] as const;
+
+
 
 type FormValues = {
   name: string;
@@ -62,7 +75,7 @@ function validate(values: FormValues): Partial<Record<FieldName, string>> {
   if (!values.size) errors.size = "Choose an approximate size.";
   const qty = Number(values.quantity);
   if (!values.quantity.trim() || !Number.isInteger(qty) || qty < 1)
-    errors.quantity = "Enter a quantity of at least 1.";
+    errors.quantity = "Choose or enter a quantity.";
   if (!values.description.trim())
     errors.description = "Tell us about your design.";
   if (!values.consent)
@@ -72,6 +85,9 @@ function validate(values: FormValues): Partial<Record<FieldName, string>> {
 }
 
 export function StickerOrderForm() {
+  const router = useRouter();
+  const { addCustomItem } = useCart();
+  const { addToCart } = useCart();
   const [values, setValues] = useState<FormValues>(initialValues);
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
@@ -82,12 +98,19 @@ export function StickerOrderForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const successHeadingRef = useRef<HTMLHeadingElement>(null);
 
+  const isStandardSize = values.size === STANDARD_SIZE_LABEL;
+  const quantityNum = Number(values.quantity);
+  const computedPrice = isStandardSize ? getStandardPrice(quantityNum) : null;
+
   useEffect(() => {
     if (status === "success") successHeadingRef.current?.focus();
   }, [status]);
 
   const setValue = <K extends FieldName>(field: K, value: FormValues[K]) => {
     const next = { ...values, [field]: value };
+    if (field === "size" && value !== values.size) {
+      next.quantity = "";
+    }
     setValues(next);
     if (errors[field] && !validate(next)[field]) {
       setErrors((prev) => {
@@ -121,7 +144,6 @@ export function StickerOrderForm() {
       });
       return;
     }
-
     setStatus("submitting");
     try {
       const payload: StickerOrderPayload = {
@@ -137,13 +159,34 @@ export function StickerOrderForm() {
         file: file ?? undefined,
         consent: true,
       };
-      await submitStickerOrder(payload);
+
+      await submitStickerOrder(payload, computedPrice ?? undefined);
+
+      if (isStandardSize && computedPrice != null) {
+        const stickerProduct = await getStickerProduct();
+        const variant = stickerProduct
+          ? findStickerVariant(stickerProduct, quantityNum)
+          : undefined;
+
+        if (!stickerProduct || !variant) {
+          console.error("[sticker-order] could not find matching Wix variant", {
+            quantityNum,
+          });
+          setStatus("error");
+          return;
+        }
+
+        addToCart(stickerProduct, variant);
+        router.push("/cart");
+        return;
+      }
+
       setStatus("success");
     } catch (error) {
       console.error("[sticker-order] submission failed", error);
       setStatus("error");
     }
-  };
+};
 
   if (status === "success") {
     return (
@@ -254,21 +297,46 @@ export function StickerOrderForm() {
           )}
         </Field>
 
-        <Field label="Quantity" name="quantity" error={errors.quantity}>
-          {(props) => (
-            <input
-              {...props}
-              type="number"
-              min={1}
-              step={1}
-              inputMode="numeric"
-              className={inputBase}
-              value={values.quantity}
-              onChange={(e) => setValue("quantity", e.target.value)}
-              onBlur={() => validateField("quantity")}
-            />
-          )}
-        </Field>
+        {isStandardSize ? (
+          <Field label="Quantity" name="quantity" error={errors.quantity}>
+            {(props) => (
+              <select
+                {...props}
+                className={inputBase}
+                value={values.quantity}
+                onChange={(e) => setValue("quantity", e.target.value)}
+                onBlur={() => validateField("quantity")}
+              >
+                <option value="">Select a quantity</option>
+                {QUANTITY_TIERS.map((tier) => (
+                  <option key={tier.quantity} value={tier.quantity}>
+                    {tier.quantity} stickers — ${tier.price}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+        ) : (
+          <Field
+            label="Approximate quantity"
+            name="quantity"
+            error={errors.quantity}
+          >
+            {(props) => (
+              <input
+                {...props}
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                className={inputBase}
+                value={values.quantity}
+                onChange={(e) => setValue("quantity", e.target.value)}
+                onBlur={() => validateField("quantity")}
+              />
+            )}
+          </Field>
+        )}
       </div>
 
       <fieldset className="mt-8">
@@ -302,9 +370,9 @@ export function StickerOrderForm() {
       </fieldset>
 
       <fieldset className="mt-8">
-        <legend className={labelBase}>Approximate size</legend>
+        <legend className={labelBase}>Size</legend>
         <div className="mt-1 grid gap-0.5 sm:grid-cols-2">
-          {STICKER_SIZE_OPTIONS.map((option, i) => (
+          {SIZE_OPTIONS.map((option, i) => (
             <label
               key={option.value}
               className="flex items-center gap-2.5 py-1 text-sm text-ink"
@@ -328,6 +396,15 @@ export function StickerOrderForm() {
           </p>
         )}
       </fieldset>
+
+      {computedPrice != null && (
+        <div className="mt-6 flex items-center justify-between rounded-lg border border-line bg-surface px-4 py-3">
+          <span className="text-sm text-ink-soft">Order total</span>
+          <span className="font-display text-lg font-semibold text-ink">
+            ${computedPrice.toFixed(2)}
+          </span>
+        </div>
+      )}
 
       <div className="mt-8">
         <label htmlFor="sticker-design-file" className={labelBase}>
@@ -398,7 +475,7 @@ export function StickerOrderForm() {
           <p className="mt-1 text-ink-soft">
             Nothing was submitted — your answers are still here, so you can try
             again. If it keeps failing, email us at{" "}
-            <a
+            <a 
               href="mailto:Info@bayareafirestore.com"
               className="underline underline-offset-2 transition-colors hover:text-signal"
             >
@@ -420,7 +497,9 @@ export function StickerOrderForm() {
             ? "Sending…"
             : status === "error"
             ? "Try again"
-            : "Submit request"}
+            : isStandardSize && computedPrice != null
+            ? `Submit order — $${computedPrice.toFixed(2)}`
+            : "Add to cart"}
         </Button>
       </div>
     </form>

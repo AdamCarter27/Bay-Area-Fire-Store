@@ -17,6 +17,7 @@ export type CartItem = {
   variantTitle: string;
   price: number;
   quantity: number;
+  isCustom?: boolean; // Flag to indicate if the item is a custom sticker
 };
 
 type CartContextType = {
@@ -24,6 +25,7 @@ type CartContextType = {
   hydrated: boolean;
   lastAdded: CartItem | null;
   addToCart: (product: Product, variant: ProductVariant) => void;
+  addCustomItem: (item: { title: string; price: number; quantity: number }) => void;
   removeFromCart: (slug: string, variantId: string) => void;
   updateQuantity: (slug: string, variantId: string, quantity: number) => void;
   clearCart: () => void;
@@ -93,6 +95,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLastAdded(addedItem);
   }
 
+  function addCustomItem(item: { title: string; price: number; quantity: number }) {
+  const addedItem: CartItem = {
+    slug: `custom-${Date.now()}`,
+    title: item.title,
+    image: "",
+    wixId: "",
+    variantId: "custom",
+    variantTitle: "",
+    price: item.price,
+    quantity: item.quantity,
+    isCustom: true,
+  };
+
+  setItems((prev) => [...prev, addedItem]);
+  setLastAdded(addedItem);
+}
+
   function removeFromCart(slug: string, variantId: string) {
     setItems((prev) =>
       prev.filter((item) => !(item.slug === slug && item.variantId === variantId))
@@ -124,6 +143,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items,
         hydrated,
         lastAdded,
+        addCustomItem,
         addToCart,
         removeFromCart,
         updateQuantity,

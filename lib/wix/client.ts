@@ -1,5 +1,6 @@
 import { createClient, OAuthStrategy } from "@wix/sdk";
 import { products, collections } from "@wix/stores";
+import {currentCart, checkout} from "@wix/ecom";
 
 export const wixClient = createClient({
   modules: { products, collections },

@@ -43,23 +43,29 @@ const checkoutClient = createClient({
 export class CheckoutError extends Error {}
 
 function toLineItems(items: CartItem[]) {
-  return items.map((item) => ({
-    quantity: item.quantity,
-    catalogReference: {
-      appId: WIX_STORES_APP_ID,
-      catalogItemId: item.wixId,
-      /*
-       * Only products whose variants Wix manages carry a real variant ID.
-       * For the rest our catalog mapper invents a single "one size" variant so
-       * the UI has something to select, and that synthetic ID is meaningless
-       * to Wix — sending it fails the whole checkout with INVALID_ARGUMENT, so
-       * those items go through with no options at all.
-       */
-      ...(item.variantId && item.variantId !== ONE_SIZE_VARIANT_ID
-        ? { options: { variantId: item.variantId } }
-        : {}),
-    },
-  }));
+  return items
+    .filter((item) => !item.isCustom)
+    .map((item) => ({
+      quantity: item.quantity,
+      catalogReference: {
+        appId: WIX_STORES_APP_ID,
+        catalogItemId: item.wixId,
+        ...(item.variantId && item.variantId !== ONE_SIZE_VARIANT_ID
+          ? { options: { variantId: item.variantId } }
+          : {}),
+      },
+    }));
+}
+
+function toCustomLineItems(items: CartItem[]) {
+  return items
+    .filter((item) => item.isCustom)
+    .map((item) => ({
+      quantity: item.quantity,
+      price: item.price.toFixed(2),
+      productName: { original: item.title },
+      itemType: { preset: "PHYSICAL" },
+    }));
 }
 
 /**
@@ -80,7 +86,7 @@ export async function startWixCheckout(items: CartItem[]): Promise<string> {
    * cannot be bought — better to say so than to send a reference Wix will
    * reject with a stack trace.
    */
-  if (items.some((item) => !item.wixId)) {
+  if (items.some((item) => !item.isCustom && !item.wixId)) {
     throw new CheckoutError(
       "Some items in your cart are unavailable right now. Please remove them and try again."
     );
@@ -88,6 +94,7 @@ export async function startWixCheckout(items: CartItem[]): Promise<string> {
 
   const created = await checkoutClient.checkout.createCheckout({
     lineItems: toLineItems(items),
+    customLineItems: toCustomLineItems(items),
     channelType: checkout.ChannelType.WEB,
   });
 
