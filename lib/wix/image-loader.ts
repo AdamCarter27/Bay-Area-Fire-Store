@@ -23,6 +23,20 @@
 // and takes the same params.
 const WIX_IMAGE_PARAMS_RE = /\/v1\/(fit|fill)\/w_(\d+),h_(\d+)(,[^/]*)?\//;
 
+/**
+ * Whether this src is a Wix media URL the loader can actually resize.
+ *
+ * Call sites use it to set `unoptimized` on everything else. Next warns
+ * ("loader property that does not implement width") whenever a custom loader
+ * returns a URL that ignores the requested width — which is exactly what this
+ * loader does for local files under /public, since without Next's optimizer
+ * there is nothing to resize them with. Marking them unoptimized states that
+ * intent instead of leaving a warning per image on every page.
+ */
+export function isWixMediaUrl(src: string): boolean {
+  return WIX_IMAGE_PARAMS_RE.test(src);
+}
+
 export default function wixImageLoader({
   src,
   width,

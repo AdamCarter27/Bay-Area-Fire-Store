@@ -51,6 +51,7 @@ export function SiteHeader() {
         <Link href="/" aria-label="Bay Area Fire Store — home" className="flex items-center">
           <Image
             src="/media/BayAreaFireStoreLogo.avif"
+            unoptimized
             alt="Bay Area Fire Store"
             width={386}
             height={172}
