@@ -44,7 +44,7 @@ export const wixBrandMap: Record<string, string> = {
   "Asian Firefighters Association": "asian-firefighters-association",
   "2 Eleven Shields": "2-eleven-shields",
   "Bay Area Fire Store Apparel": "bay-area-fire-store",
-  "2026 Bay Area Fire Conference Apparel": "bay-area-fire-conference",
+  "2026 Bay Area Fire Conference Apparel": "fire-nuggets",
   "Fight Fire, Get Dirty": "fight-fire-get-dirty",
   "Keep Fire In Your Life | Flow and Move": "keep-fire-in-your-life",
   "Fire Nuggets": "fire-nuggets",
