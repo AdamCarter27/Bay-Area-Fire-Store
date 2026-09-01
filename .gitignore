@@ -44,3 +44,6 @@ next-env.d.ts
 # Cloudflare Workers build output (OpenNext adapter) — see open-next.config.ts
 .open-next/
 .wrangler/
+
+# Wix release payload, assembled by `npm run build:wix`
+/dist/
