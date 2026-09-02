@@ -28,7 +28,7 @@ export const wixBrandMap: Record<string, string> = {
   "Colma Fire District": "colma-fire",
   "HMB Volunteer Fire Dept.": "hmb-volunteer-fire",
   "Vallejo Leatherheads": "vallejo-leatherheads",
-  "SFFD Cross Axe": "sffd-cross-axe",
+  "SFFD Cross Axe": "sffd",
   "SFFD Golf Club": "sffd-golf-club",
   "SFFD Hockey Club": "sffd-hockey",
   "SFFD K9": "sffd-k9",
