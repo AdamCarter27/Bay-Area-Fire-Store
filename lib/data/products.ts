@@ -27,6 +27,7 @@
 
 import { cache } from "react";
 import { getWixProducts } from "@/lib/wix/get-prod";
+import { isHatSize, isYouthSize, sortSizes } from "@/lib/wix/size-normalize";
 import { brands, brandGroups } from "./brands";
 import { mockProducts } from "./mock-products";
 import type { Collection, Product } from "./types";
@@ -84,6 +85,43 @@ const getCatalog = cache(async (): Promise<Product[]> => {
 
 export async function getProducts(): Promise<Product[]> {
   return getCatalog();
+}
+
+/*
+ * The shop's size filter options, derived from the whole catalog.
+ *
+ * Memoized against the catalog array itself rather than recomputed per
+ * request: the answer only changes when the catalog does, but /shop is
+ * server-rendered on every visit and this walks all 259 products
+ * (flatMap -> Set -> sort) to produce an identical result each time. On
+ * Cloudflare Workers that is CPU billed against a 10ms budget for nothing.
+ *
+ * Reference equality is the right key here — getCatalog() hands back the same
+ * array until the TTL expires and it refetches, at which point the memo misses
+ * and recomputes once.
+ */
+let sizeOptionsMemo: {
+  source: Product[];
+  value: {
+    sizeOptions: string[];
+    hatSizeOptions: string[];
+    youthSizeOptions: string[];
+  };
+} | null = null;
+
+export async function getSizeOptions() {
+  const products = await getCatalog();
+  if (sizeOptionsMemo?.source === products) return sizeOptionsMemo.value;
+
+  const everySize = sortSizes([...new Set(products.flatMap((p) => p.sizes))]);
+  const value = {
+    sizeOptions: everySize.filter((s) => !isHatSize(s) && !isYouthSize(s)),
+    hatSizeOptions: everySize.filter(isHatSize),
+    youthSizeOptions: everySize.filter(isYouthSize),
+  };
+
+  sizeOptionsMemo = { source: products, value };
+  return value;
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
