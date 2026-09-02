@@ -2,6 +2,7 @@ import { Hero } from "@/components/home/Hero";
 import { FeaturedCollection } from "@/components/home/FeaturedCollection";
 import { CustomWorkDeck } from "@/components/home/CustomWorkDeck";
 import { CollectionsTeaser } from "@/components/home/CollectionsTeaser";
+import { FeatureDepartmentSection } from "@/components/home/FeatureDepartment";
 import { StoryStrip } from "@/components/home/StoryStrip";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
         <FeaturedCollection />
         <CustomWorkDeck />
         <CollectionsTeaser />
+        <FeatureDepartmentSection />
         <StoryStrip />
       </div>
     </div>
