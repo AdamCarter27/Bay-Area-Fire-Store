@@ -7,9 +7,9 @@ import { SITE_URL } from "@/lib/site-url";
  *
  * Two rules decide what belongs here:
  *
- *  1. Only pages we want indexed. /cart, /checkout, /checkout/complete and
- *     /wix-test all set `robots: { index: false }` in their own metadata —
- *     listing them would ask Google to crawl pages we then tell it to drop.
+ *  1. Only pages we want indexed. /cart and /checkout/complete both set
+ *     `robots: { index: false }` in their own metadata — listing them would
+ *     ask Google to crawl pages we then tell it to drop.
  *  2. Only canonical URLs. Every filtered shop view (?brand=, ?group=, ?q=)
  *     canonicalises back to bare /shop, so the sitemap lists /shop once and
  *     lets the crawler reach the rest through the product links.
@@ -27,7 +27,6 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: "/brands", changeFrequency: "weekly", priority: 0.8 },
   { url: "/custom-order", changeFrequency: "monthly", priority: 0.8 },
   { url: "/custom-order/brands", changeFrequency: "monthly", priority: 0.6 },
-  { url: "/custom-order/stickers", changeFrequency: "monthly", priority: 0.6 },
   { url: "/about", changeFrequency: "monthly", priority: 0.5 },
   { url: "/contact", changeFrequency: "monthly", priority: 0.5 },
   { url: "/faq", changeFrequency: "monthly", priority: 0.4 },

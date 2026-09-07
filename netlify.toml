@@ -1,0 +1,19 @@
+# Netlify build configuration.
+#
+# The Cloudflare Workers setup (open-next.config.ts, wrangler.jsonc) is left in
+# the repo deliberately: Wix does not allow nameserver changes on domains it
+# registers, so Cloudflare cannot serve this domain without a registrar
+# transfer. Netlify connects with the A/CNAME records Wix does let us edit.
+# If the domain ever moves registrar, that setup is ready to use again.
+
+[build]
+  # Plain `next build` — Netlify's Next.js runtime handles the rest, including
+  # ISR for the prerendered product pages, so no adapter is needed here.
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

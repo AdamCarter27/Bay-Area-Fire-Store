@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { isWixMediaUrl } from "@/lib/wix/image-loader";
 
 /**
  * Renders product imagery, or a branded placeholder frame while the owner's
@@ -25,6 +26,7 @@ export function ProductImage({
       <div className={`relative overflow-hidden bg-surface ${className}`}>
         <Image
           src={src}
+          unoptimized={!isWixMediaUrl(src)}
           alt={alt}
           fill
           sizes={sizes}

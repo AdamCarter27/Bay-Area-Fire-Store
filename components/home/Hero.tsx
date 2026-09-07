@@ -94,8 +94,10 @@ export function Hero() {
             playsInline
             autoPlay
             // metadata, not auto: the poster paints immediately and autoplay
-            // still pulls the file, but the browser schedules the 4.9MB
-            // download instead of racing it against every above-fold asset.
+            // still pulls the file, but the browser schedules the download
+            // instead of racing it against every above-fold asset. The clip is
+            // re-encoded at CRF 33 (~1.1MB, down from 4.7MB) — it sits behind
+            // content at cover scale, so the lost detail is invisible.
             preload="metadata"
             aria-hidden
           />

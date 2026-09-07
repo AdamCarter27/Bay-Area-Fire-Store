@@ -1,0 +1,40 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "bay-area-fire-store",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // Where regenerated ISR pages are stored. Without it OpenNext falls back to
+  // a "dummy" cache that accepts writes and discards them, so the prerendered
+  // product pages would serve build-time prices and stock forever — silently,
+  // with no error.
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "bayareafirestore"
+    }
+  ],
+
+  // The revalidation queue calls the worker back to re-render a stale page.
+  // `service` must match `name` above — it is this worker pointing at itself.
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "bay-area-fire-store"
+    }
+  ]
+
+  // Deployed to Cloudflare directly (`npm run deploy:cf`).
+  //
+  // Wix-managed headless hosting was tried first and cannot run this app.
+  // Their docs say server code runs on "the Cloudflare Workers runtime", but
+  // the deployed runtime is Node: it loads the bundle with Node's ESM loader,
+  // which rejects the `cloudflare:workers` imports OpenNext emits for its
+  // DurableObject-based cache classes ("Only URLs with a scheme in: file,
+  // data, and node are supported. Received protocol 'cloudflare:'").
+}

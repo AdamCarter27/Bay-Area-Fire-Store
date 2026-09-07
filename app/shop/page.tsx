@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getProducts } from "@/lib/data/products";
+import { getProducts, getSizeOptions } from "@/lib/data/products";
 import { categoryGroups } from "@/lib/data/categoryGroups";
 import { brands, brandGroups } from "@/lib/data/brands";
 import { ShopFilters } from "@/components/shop/ShopFilters";
@@ -8,7 +8,6 @@ import { FilterDisclosure } from "@/components/shop/FilterDisclosure";
 import { ShopSearch } from "@/components/shop/ShopSearch";
 import { ProductCard } from "@/components/product/ProductCard";
 import { priceRanges } from "@/lib/data/priceRanges";
-import { isHatSize, isYouthSize, sortSizes } from "@/lib/wix/size-normalize";
 
 /*
  * The live catalog is 256 products. Rendering all of them is a slow, unusable
@@ -58,9 +57,15 @@ export async function generateMetadata({
     description,
     alternates: { canonical: "/shop" },
     openGraph: { title, description, url: "/shop" },
-    // Filtered and searched views are the same catalog resliced — let Google
-    // index the canonical shop page and follow through to the products.
-    robots: q || focus ? { index: false, follow: true } : undefined,
+    /*
+     * Filtered and searched views are the same catalog resliced — let Google
+     * index the canonical shop page and follow through to the products.
+     *
+     * Spread rather than `: undefined`, so the unfiltered case omits the key
+     * entirely and inherits the root layout. An explicit `undefined` counts as
+     * setting the field and wiped the layout's preview-build noindex.
+     */
+    ...(q || focus ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -114,11 +119,13 @@ export default async function ShopPage({
    * split by size family so hat sizes never appear under apparel. Derived from
    * the unfiltered catalog on purpose: the options a shopper sees shouldn't
    * shift underneath them as they narrow things down.
+   *
+   * Memoized in lib/data/products.ts — the result is the same for every
+   * visitor until the catalog refreshes, so it is computed once per cache fill
+   * rather than on every render.
    */
-  const everySize = sortSizes([...new Set(allProducts.flatMap((p) => p.sizes))]);
-  const sizeOptions = everySize.filter((s) => !isHatSize(s) && !isYouthSize(s));
-  const hatSizeOptions = everySize.filter(isHatSize);
-  const youthSizeOptions = everySize.filter(isYouthSize);
+  const { sizeOptions, hatSizeOptions, youthSizeOptions } =
+    await getSizeOptions();
 
   let filtered = allProducts;
 

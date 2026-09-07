@@ -11,7 +11,10 @@ import { CartLink } from "@/components/cart/CartLink";
 const navLinks = [
   { href: "/brands", label: "Brands" },
   { href: "/custom-order", label: "Custom Order Form" },
-  { href: "/custom-order/stickers", label: "Custom Stickers" },
+  // Custom Stickers link parked at the owner's request until the sticker page
+  // launches — restore alongside the notFound() in its page.tsx and the
+  // sitemap entry.
+  // { href: "/custom-order/stickers", label: "Custom Stickers" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -48,6 +51,7 @@ export function SiteHeader() {
         <Link href="/" aria-label="Bay Area Fire Store — home" className="flex items-center">
           <Image
             src="/media/BayAreaFireStoreLogo.avif"
+            unoptimized
             alt="Bay Area Fire Store"
             width={386}
             height={172}

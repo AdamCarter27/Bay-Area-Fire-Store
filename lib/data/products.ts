@@ -6,19 +6,28 @@
  *
  * They now read the live Wix Stores catalog through lib/wix/get-prod.ts. A
  * catalog read is three network round-trips (Wix caps a page at 100 items), so
- * it is cached two ways: unstable_cache holds the mapped result across requests
- * for CATALOG_TTL_SECONDS, and React cache() dedupes it within a single render,
- * where the shop page, header, and footer would otherwise each ask for it.
+ * it is cached two ways: the module-scope cache below holds the mapped result
+ * across requests for CATALOG_TTL_SECONDS, and React cache() dedupes it within
+ * a single render, where the shop page, header, and footer would otherwise
+ * each ask for it.
  *
- * unstable_cache rather than the `use cache` directive on purpose: `use cache`
- * requires cacheComponents: true in next.config.ts, a project-wide rendering
- * change that would force /shop (which reads searchParams) into a Suspense
- * refactor. That is not worth it for one data read.
+ * A module-scope cache rather than unstable_cache because we deploy to the
+ * Cloudflare Workers runtime, where Next's data cache needs a storage binding
+ * (R2/KV) to persist to. Wix-managed hosting gives us the runtime without a
+ * Cloudflare account, so that binding does not exist and unstable_cache
+ * silently degraded to no caching at all — a full catalog re-walk per page
+ * view. A module-scope value needs no binding and survives between requests,
+ * because the runtime reuses an isolate across them.
+ *
+ * The tradeoff: this cache is per-isolate rather than shared, so a cold isolate
+ * refetches. Nothing is lost relative to the unstable_cache version — the tag
+ * it declared was never passed to revalidateTag anywhere, so its only real
+ * behavior was the same time-based expiry reproduced here.
  */
 
 import { cache } from "react";
-import { unstable_cache } from "next/cache";
 import { getWixProducts } from "@/lib/wix/get-prod";
+import { isHatSize, isYouthSize, sortSizes } from "@/lib/wix/size-normalize";
 import { brands, brandGroups } from "./brands";
 import { mockProducts } from "./mock-products";
 import type { Collection, Product } from "./types";
@@ -27,20 +36,48 @@ import type { Collection, Product } from "./types";
 // keeps the store current without re-walking 256 products on every visit.
 const CATALOG_TTL_SECONDS = 300;
 
-const fetchCatalog = unstable_cache(getWixProducts, ["wix-catalog"], {
-  revalidate: CATALOG_TTL_SECONDS,
-  tags: ["catalog"],
-});
+let cached: { products: Product[]; expires: number } | null = null;
+// Holds the request that is currently refreshing the cache. Without it, a burst
+// of traffic arriving on an expired cache would each start their own full
+// catalog walk against Wix.
+let inflight: Promise<Product[]> | null = null;
+
+function fetchCatalog(): Promise<Product[]> {
+  if (cached && Date.now() < cached.expires) {
+    return Promise.resolve(cached.products);
+  }
+  if (inflight) return inflight;
+
+  inflight = getWixProducts()
+    .then((products) => {
+      cached = {
+        products,
+        expires: Date.now() + CATALOG_TTL_SECONDS * 1000,
+      };
+      return products;
+    })
+    .finally(() => {
+      inflight = null;
+    });
+
+  return inflight;
+}
 
 /*
  * The mock catalog stays as a fallback rather than dead weight: if Wix is
- * unreachable mid-demo, the store renders 15 products instead of a 500.
+ * unreachable the store renders 15 products instead of a 500. Stale real
+ * products beat fresh mock ones, though, so a failed *refresh* keeps serving
+ * the last good catalog and only a cold failure falls through to the mocks.
  */
 const getCatalog = cache(async (): Promise<Product[]> => {
   try {
     const products = await fetchCatalog();
     return products.length > 0 ? products : mockProducts;
   } catch (error) {
+    if (cached && cached.products.length > 0) {
+      console.error("[wix] catalog refresh failed — serving stale catalog", error);
+      return cached.products;
+    }
     console.error("[wix] catalog read failed — serving mock products", error);
     return mockProducts;
   }
@@ -48,6 +85,43 @@ const getCatalog = cache(async (): Promise<Product[]> => {
 
 export async function getProducts(): Promise<Product[]> {
   return getCatalog();
+}
+
+/*
+ * The shop's size filter options, derived from the whole catalog.
+ *
+ * Memoized against the catalog array itself rather than recomputed per
+ * request: the answer only changes when the catalog does, but /shop is
+ * server-rendered on every visit and this walks all 259 products
+ * (flatMap -> Set -> sort) to produce an identical result each time. On
+ * Cloudflare Workers that is CPU billed against a 10ms budget for nothing.
+ *
+ * Reference equality is the right key here — getCatalog() hands back the same
+ * array until the TTL expires and it refetches, at which point the memo misses
+ * and recomputes once.
+ */
+let sizeOptionsMemo: {
+  source: Product[];
+  value: {
+    sizeOptions: string[];
+    hatSizeOptions: string[];
+    youthSizeOptions: string[];
+  };
+} | null = null;
+
+export async function getSizeOptions() {
+  const products = await getCatalog();
+  if (sizeOptionsMemo?.source === products) return sizeOptionsMemo.value;
+
+  const everySize = sortSizes([...new Set(products.flatMap((p) => p.sizes))]);
+  const value = {
+    sizeOptions: everySize.filter((s) => !isHatSize(s) && !isYouthSize(s)),
+    hatSizeOptions: everySize.filter(isHatSize),
+    youthSizeOptions: everySize.filter(isYouthSize),
+  };
+
+  sizeOptionsMemo = { source: products, value };
+  return value;
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {

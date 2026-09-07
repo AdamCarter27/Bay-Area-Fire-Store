@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { stickerDrop } from "@/lib/data/sticker-drop";
+import { isWixMediaUrl } from "@/lib/wix/image-loader";
 
 // Desktop pile — tune freely, wide-screen numbers.
 const STICKER_CONFIG = [
@@ -126,6 +127,7 @@ export function StickerHero() {
                 src={s.src}
                 alt=""
                 fill
+                unoptimized={!isWixMediaUrl(s.src)}
                 sizes={isMobile ? "170px" : "280px"}
                 className="object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.45)]"
               />

@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CartProvider } from "@/components/cart/CartContext";
 import { AddedToCartPopup } from "@/components/cart/AddedToCartPopUp";
 import { socialLinks } from "@/lib/data/social";
-import { SITE_URL } from "@/lib/site-url";
+import { SITE_URL, IS_PRODUCTION_SITE } from "@/lib/site-url";
 import "./globals.css";
 
 // Display: a refined variable serif for the editorial headlines.
@@ -53,6 +53,14 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} — Your Local Source for Bay Area Fire Gear`,
     description: SITE_DESCRIPTION,
   },
+  /*
+   * Keep preview deployments out of search entirely. A page is excluded
+   * reliably only if the crawler can fetch it and read this — which is why
+   * robots.txt still allows crawling rather than blocking the URL (a blocked
+   * URL can still be listed from inbound links). Pages that set their own
+   * `robots` — /cart, /checkout/complete — are already noindex regardless.
+   */
+  ...(IS_PRODUCTION_SITE ? {} : { robots: { index: false, follow: false } }),
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} — Your Local Source for Bay Area Fire Gear`,
