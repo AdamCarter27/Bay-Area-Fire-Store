@@ -27,13 +27,13 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const light = !scrolled;
+  const light = true;
 
   return (
     <header
       className={`sticky top-0 z-[100] transition-colors duration-300 ${
         scrolled
-          ? "border-b border-line bg-paper/85 backdrop-blur-sm"
+          ? "border-b border-line-strong bg-ink/95 backdrop-blur-sm"
           : "border-b border-transparent"
       }`}
     >
