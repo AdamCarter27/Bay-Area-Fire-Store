@@ -120,6 +120,7 @@ export async function getWixProducts(): Promise<Product[]> {
         (collectionNames.includes(NEW_ARRIVALS_COLLECTION) ? "New" : undefined),
       description: stripHtml(p.description ?? "") || undefined,
       inStock: p.stock?.inStock ?? true,
+      createdAt: p._createdDate ? new Date(p._createdDate).toISOString() : undefined,
       sizes: mapSizes(p, categories),
       variants,
     };

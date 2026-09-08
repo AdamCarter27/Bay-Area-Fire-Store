@@ -23,6 +23,7 @@ export type ProductVariant = {
 //   badge       ← product.ribbon, falling back to the "New Arrivals" collection
 //   description ← product.description, stripped of Wix's markup
 //   inStock     ← product.stock?.inStock
+//   createdAt   ← product._createdDate
 //   sizes       ← variant choices on a size axis, run through normalizeSize()
 //   variants    ← product.variants flattened; Wix models options × choices as a
 //                 matrix (size AND color), so the mapper owns that flattening
@@ -43,6 +44,11 @@ export type Product = {
   badge?: string; // small merchandising flag, e.g. "New", "Best seller"
   description?: string; // plain text; absent when the catalog has no copy
   inStock: boolean; // false = every variant sold out
+  // When the owner created the item in Wix, ISO 8601. Absent for mock data.
+  // The home page's "New drops" row sorts on this: Wix returns the catalog
+  // oldest-first and won't sort on _createdDate server-side, so recency has to
+  // be resolved here.
+  createdAt?: string;
   // Canonical, filterable size tokens ("M", "2XL", "L/XL") derived from the
   // variant choices — the raw catalog spells the same size a half-dozen ways,
   // so the shop filter matches on this rather than on variant titles. Empty for

@@ -130,14 +130,25 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
 }
 
 /*
- * The home page's featured row is merchandising, not inventory: lead with
+ * The home page's "New drops" row is merchandising, not inventory: lead with
  * products a visitor can actually buy and that have a photo, and only fall back
  * to the rest if the catalog is thin.
+ *
+ * Newest first, which has to happen here. Wix returns the catalog oldest-first
+ * and its query builder won't sort on _createdDate (only lastUpdated, which
+ * jumps to the top whenever the owner edits a years-old product), so recency
+ * is resolved from the mapped createdAt after the full walk. Products without
+ * a createdAt — the mock fallback catalog — sort last and keep their original
+ * order, so an offline render still shows a full row.
  */
 export async function getFeatured(count = 8): Promise<Product[]> {
   const products = await getCatalog();
   const shoppable = products.filter((p) => p.inStock && p.image);
-  return (shoppable.length >= count ? shoppable : products).slice(0, count);
+  const pool = shoppable.length >= count ? shoppable : products;
+
+  return [...pool]
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+    .slice(0, count);
 }
 
 // How many brand tiles the home teaser shows. More than this and the section
