@@ -104,6 +104,7 @@ export async function getWixProducts(): Promise<Product[]> {
     // categories as the rest of the product, instead of re-deriving a guess
     // from the title themselves.
     const variants = mapVariants(p, categories);
+    const images = (p.media?.items ?? []).map((item) => capImageSize(item.image?.url ?? "")).filter(Boolean);
 
     return {
       wixId: p._id ?? "",
@@ -111,6 +112,7 @@ export async function getWixProducts(): Promise<Product[]> {
       title,
       price: p.priceData?.price ?? 0,
       image: capImageSize(p.media?.mainMedia?.image?.url ?? ""),
+      images: images.length > 0 ? images : [capImageSize(p.media?.mainMedia?.image?.url ?? "")],
       categories,
       collections,
       badge:
