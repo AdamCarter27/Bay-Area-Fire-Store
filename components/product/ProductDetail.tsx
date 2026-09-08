@@ -11,16 +11,27 @@ export function ProductDetail({ product }: { product: Product }) {
   const [variantId, setVariantId] = useState(
     (product.variants.find((v) => v.inStock) ?? product.variants[0]).id
   );
+  // NEW: tracks which photo index is currently shown, instead of the photo
+  // itself — makes prev/next arithmetic simple (just +1 / -1, wrapping).
+  const [activeIndex, setActiveIndex] = useState(0);
   const { addToCart } = useCart();
 
   const variant = product.variants.find((v) => v.id === variantId)!;
   const soldOut = !product.inStock || !variant.inStock;
 
+  // NEW: wrap around both ends so clicking never dead-ends the gallery.
+  const showPrev = () =>
+    setActiveIndex((i) => (i === 0 ? product.images.length - 1 : i - 1));
+  const showNext = () =>
+    setActiveIndex((i) => (i === product.images.length - 1 ? 0 : i + 1));
+
   return (
     <div className="mx-auto grid max-w-4xl grid-cols-1 gap-10 px-5 py-16 sm:grid-cols-2 sm:px-8">
       <div className="relative">
         <ProductImage
-          src={product.image}
+          // NEW: reads the current index from product.images instead of the
+          // single product.image field.
+          src={product.images[activeIndex]}
           alt={product.title}
           label={product.categories[0]}
           priority
@@ -34,6 +45,45 @@ export function ProductDetail({ product }: { product: Product }) {
             Sold out
           </span>
         )}
+
+        {/* NEW: prev/next arrows, only shown when there's more than one photo. */}
+        {product.images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={showPrev}
+              aria-label="Previous photo"
+              className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink shadow-md transition-opacity hover:opacity-80"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M15 6l-6 6 6 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={showNext}
+              aria-label="Next photo"
+              className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink shadow-md transition-opacity hover:opacity-80"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </>
+        )}
+        {/* END NEW */}
       </div>
       <div>
         <p className="text-xs capitalize text-ash">{product.categories[0]}</p>
@@ -60,8 +110,6 @@ export function ProductDetail({ product }: { product: Product }) {
               className="mt-2 block w-full rounded-md border border-line bg-paper px-3 py-2 text-sm text-ink"
             >
               {product.variants.map((v) => (
-                // Sold-out options stay listed but unselectable, so the shopper
-                // can see the size exists and is simply out.
                 <option key={v.id} value={v.id} disabled={!v.inStock}>
                   {v.title}
                   {v.inStock ? "" : " — sold out"}
