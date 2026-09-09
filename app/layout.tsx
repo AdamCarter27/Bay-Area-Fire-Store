@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { FreeShippingBanner } from "@/components/layout/FreeShippingBanner";
 import { CartProvider } from "@/components/cart/CartContext";
 import { AddedToCartPopup } from "@/components/cart/AddedToCartPopUp";
 import { socialLinks } from "@/lib/data/social";
@@ -23,17 +24,6 @@ const inter = Inter({
   display: "swap",
 });
 
-/*
- * Site-wide metadata defaults. Every page sets only its own `title` string and
- * inherits the rest — the template appends the store name so page titles never
- * have to repeat it, and openGraph/twitter fall through unless a page (a
- * product, say) overrides them with something better.
- *
- * `metadataBase` resolves relative OG image paths to absolute URLs, which
- * social scrapers require. The origin itself lives in lib/site-url.ts so the
- * sitemap and robots.txt resolve against the same one.
- */
-
 const SITE_NAME = "Bay Area Fire Store";
 const SITE_DESCRIPTION =
   "Firefighter-owned since 2024. Department apparel, custom embroidery and screen printing, and the brands the Bay Area fire service trusts.";
@@ -53,13 +43,6 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} — Your Local Source for Bay Area Fire Gear`,
     description: SITE_DESCRIPTION,
   },
-  /*
-   * Keep preview deployments out of search entirely. A page is excluded
-   * reliably only if the crawler can fetch it and read this — which is why
-   * robots.txt still allows crawling rather than blocking the URL (a blocked
-   * URL can still be listed from inbound links). Pages that set their own
-   * `robots` — /cart, /checkout/complete — are already noindex regardless.
-   */
   ...(IS_PRODUCTION_SITE ? {} : { robots: { index: false, follow: false } }),
   twitter: {
     card: "summary_large_image",
@@ -93,6 +76,7 @@ export default function RootLayout({
             Skip to content
           </a>
 
+          <FreeShippingBanner />
           <SiteHeader />
 
           <main id="main" className="flex flex-1 flex-col">
@@ -126,9 +110,6 @@ export default function RootLayout({
                   </Link>
                 ))}
               </nav>
-              {/* Same URLs the contact page uses — see lib/data/social.ts.
-                  Text labels here rather than icons: the footer column reads as
-                  a list of links, and an icon pair would sit oddly beside it. */}
               <div className="flex gap-4 text-sm">
                 {socialLinks.map((social) => (
                   <a
