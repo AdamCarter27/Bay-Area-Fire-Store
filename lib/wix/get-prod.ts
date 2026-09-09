@@ -7,6 +7,7 @@ import type {
   ProductVariant,
 } from "@/lib/data/types";
 import { wixCategoryMap, wixBrandMap } from "@/lib/wix/collection-mapping";
+import { newestSlugs } from "@/lib/data/new-arrivals";
 import {
   isSizeAxis,
   normalizeSize,
@@ -73,11 +74,6 @@ function inferCategories(title: string): string[] {
   return hit ? [hit[1]] : [];
 }
 
-// The collection whose products get the "New" badge. Nothing in the live
-// catalog carries a Wix ribbon, so without this fallback no product on the
-// site would ever show a merchandising flag.
-const NEW_ARRIVALS_COLLECTION = "New Arrivals";
-
 export async function getWixProducts(): Promise<Product[]> {
   const [items, collectionMap] = await Promise.all([
     queryAllProducts(),
@@ -85,6 +81,22 @@ export async function getWixProducts(): Promise<Product[]> {
   ]);
 
   warnAboutUnmappedCollections(collectionMap);
+
+  /*
+   * Which products wear the "New" badge. Nothing in the live catalog carries a
+   * Wix ribbon, so without a fallback no product would ever show a
+   * merchandising flag — and the "New Arrivals" collection this used to read
+   * is stale (see lib/data/new-arrivals.ts). Recency is decided once, across
+   * the whole catalog, so every page badges the same products.
+   */
+  const newest = newestSlugs(
+    items.map((p) => ({
+      slug: p.slug ?? "",
+      createdAt: p._createdDate
+        ? new Date(p._createdDate).toISOString()
+        : undefined,
+    }))
+  );
 
   return items.map((p): Product => {
     const collectionNames = (p.collectionIds ?? [])
@@ -121,9 +133,8 @@ export async function getWixProducts(): Promise<Product[]> {
       images: images.length > 0 ? images : [capImageSize(p.media?.mainMedia?.image?.url ?? "")],
       categories,
       collections,
-      badge:
-        p.ribbon ||
-        (collectionNames.includes(NEW_ARRIVALS_COLLECTION) ? "New" : undefined),
+      // A ribbon the owner set in Wix always wins; recency only fills the gap.
+      badge: p.ribbon || (newest.has(p.slug ?? "") ? "New" : undefined),
       description: stripHtml(p.description ?? "") || undefined,
       inStock: p.stock?.inStock ?? true,
       createdAt: p._createdDate ? new Date(p._createdDate).toISOString() : undefined,
