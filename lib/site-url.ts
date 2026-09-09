@@ -12,8 +12,13 @@ export const SITE_URL =
 /**
  * The one origin the live store is served from. Anything else — a
  * workers.dev preview, a branch deploy, localhost — is not the real site.
+ *
+ * Must match NEXT_PUBLIC_SITE_URL in Netlify exactly, and both must match the
+ * primary domain set there: the apex and www both resolve, but only the
+ * primary one serves — the other 301s to it. Disagree and IS_PRODUCTION_SITE
+ * goes false, which puts `noindex` on every page of the live store.
  */
-export const PRODUCTION_URL = "https://bayareafirestore.com";
+export const PRODUCTION_URL = "https://www.bayareafirestore.com";
 
 /**
  * Whether this build is the customer-facing store.
