@@ -1,90 +1,122 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Product } from "@/lib/data/types";
 import { useCart } from "@/components/cart/CartContext";
 import { ProductImage } from "@/components/product/ProductImage";
 
 export function ProductDetail({ product }: { product: Product }) {
-  // Open on something the shopper can actually buy — landing on a sold-out
-  // size makes a stocked product look unavailable.
   const [variantId, setVariantId] = useState(
     (product.variants.find((v) => v.inStock) ?? product.variants[0]).id
   );
-  // NEW: tracks which photo index is currently shown, instead of the photo
-  // itself — makes prev/next arithmetic simple (just +1 / -1, wrapping).
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const { addToCart } = useCart();
 
   const variant = product.variants.find((v) => v.id === variantId)!;
   const soldOut = !product.inStock || !variant.inStock;
 
-  // NEW: wrap around both ends so clicking never dead-ends the gallery.
+  const images = product.images ?? [];
   const showPrev = () =>
-    setActiveIndex((i) => (i === 0 ? product.images.length - 1 : i - 1));
+    setActiveIndex((i) => (i === 0 ? images.length - 1 : i - 1));
   const showNext = () =>
-    setActiveIndex((i) => (i === product.images.length - 1 ? 0 : i + 1));
+    setActiveIndex((i) => (i === images.length - 1 ? 0 : i + 1));
+
+  // Close on Escape, lock page scroll while open
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowLeft") showPrev();
+      if (e.key === "ArrowRight") showNext();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [lightboxOpen]);
 
   return (
     <div className="mx-auto grid max-w-4xl grid-cols-1 gap-10 px-5 py-16 sm:grid-cols-2 sm:px-8">
-      <div className="relative">
-        <ProductImage
-          // NEW: reads the current index from product.images instead of the
-          // single product.image field.
-          src={product.images[activeIndex]}
-          alt={product.title}
-          label={product.categories[0]}
-          priority
-          sizes="(min-width: 640px) 45vw, 90vw"
-          className={`aspect-square w-full rounded-xl border border-line ${
-            product.inStock ? "" : "opacity-60"
-          }`}
-        />
-        {!product.inStock && (
-          <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-[0.7rem] font-semibold text-ash shadow-sm backdrop-blur-sm">
-            Sold out
-          </span>
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        {images.length > 1 && (
+          <div className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible">
+            {images.map((img, i) => (
+              <button
+                key={img}
+                type="button"
+                onClick={() => setActiveIndex(i)}
+                aria-label={`View photo ${i + 1}`}
+                className={`shrink-0 overflow-hidden rounded-lg border transition-colors ${
+                  i === activeIndex
+                    ? "border-ink"
+                    : "border-line hover:border-line-strong"
+                }`}
+              >
+                <ProductImage
+                  src={img}
+                  alt={`${product.title} thumbnail ${i + 1}`}
+                  sizes="64px"
+                  className="h-16 w-16 object-cover"
+                />
+              </button>
+            ))}
+          </div>
         )}
 
-        {/* NEW: prev/next arrows, only shown when there's more than one photo. */}
-        {product.images.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={showPrev}
-              aria-label="Previous photo"
-              className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink shadow-md transition-opacity hover:opacity-80"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 6l-6 6 6 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={showNext}
-              aria-label="Next photo"
-              className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink shadow-md transition-opacity hover:opacity-80"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M9 6l6 6-6 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </>
-        )}
-        {/* END NEW */}
+        <div className="relative order-1 min-w-0 flex-1 self-start sm:order-2">
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            aria-label="View full-size photo"
+            className="block w-full cursor-zoom-in"
+          >
+            <ProductImage
+              src={images[activeIndex]}
+              alt={product.title}
+              label={product.categories[0]}
+              priority
+              sizes="(min-width: 640px) 45vw, 90vw"
+              className={`aspect-square w-full rounded-xl border border-line ${
+                product.inStock ? "" : "opacity-60"
+              }`}
+            />
+          </button>
+          {!product.inStock && (
+            <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-[0.7rem] font-semibold text-ash shadow-sm backdrop-blur-sm">
+              Sold out
+            </span>
+          )}
+
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={showPrev}
+                aria-label="Previous photo"
+                className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink shadow-md transition-opacity hover:opacity-80"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={showNext}
+                aria-label="Next photo"
+                className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink shadow-md transition-opacity hover:opacity-80"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </>
+          )}
+        </div>
       </div>
+
       <div>
         <p className="text-xs capitalize text-ash">{product.categories[0]}</p>
         <h1 className="mt-1 font-display text-2xl font-semibold text-ink">
@@ -127,6 +159,62 @@ export function ProductDetail({ product }: { product: Product }) {
           {soldOut ? "Sold out" : "Add to Cart"}
         </button>
       </div>
+
+      {/* Lightbox */}
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Close"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-paper text-ink shadow-md hover:opacity-80"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          <div
+            className="relative max-h-[90vh] w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ProductImage
+              src={images[activeIndex]}
+              alt={product.title}
+              sizes="90vw"
+              className="aspect-square w-full rounded-xl"
+            />
+
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={showPrev}
+                  aria-label="Previous photo"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-paper text-ink shadow-md hover:opacity-80"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={showNext}
+                  aria-label="Next photo"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-paper text-ink shadow-md hover:opacity-80"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
