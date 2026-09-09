@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Product, ProductVariant } from "@/lib/data/types";
+import type { Product, ProductOption, ProductVariant } from "@/lib/data/types";
 import { useCart } from "@/components/cart/CartContext";
 import { ProductImage } from "@/components/product/ProductImage";
 
@@ -18,6 +18,22 @@ function findVariant(
     Object.entries(choices).every(
       ([axis, choice]) => variant.choices?.[axis] === choice
     )
+  );
+}
+
+/*
+ * Whether the shopper has turned embroidery off. The axis is named "Embroidery"
+ * on three of these products and "Name Embroidery" on the fourth, so this
+ * matches on the name rather than hardcoding either.
+ */
+function isEmbroideryDeclined(
+  options: ProductOption[],
+  choices: Record<string, string>
+): boolean {
+  return options.some(
+    (option) =>
+      /embroider/i.test(option.name) &&
+      (choices[option.name] ?? "").toLowerCase() === "no"
   );
 }
 
@@ -57,9 +73,23 @@ export function ProductDetail({ product }: { product: Product }) {
    * same thing a shopper would do by hand.
    */
   const selectChoice = (axis: string, choice: string) => {
-    const exact = findVariant(product.variants, { ...selected, [axis]: choice });
+    const next = { ...selected, [axis]: choice };
+
+    /*
+     * Declining embroidery hides the logo-count picker, so whatever was chosen
+     * there stops being a choice the shopper is making. Reset it to the first
+     * value rather than carrying their old pick onto the order — "Embroidery:
+     * No / Logos: 3" is a line the owner has to stop and puzzle over. Costs
+     * nothing: the count carries no price.
+     */
+    if (isEmbroideryDeclined(options, next)) {
+      for (const option of options) {
+        if (/logo/i.test(option.name)) next[option.name] = option.choices[0];
+      }
+    }
+
     const nearest =
-      exact ??
+      findVariant(product.variants, next) ??
       product.variants.find((v) => v.choices?.[axis] === choice && v.inStock) ??
       product.variants.find((v) => v.choices?.[axis] === choice);
 
@@ -90,12 +120,20 @@ export function ProductDetail({ product }: { product: Product }) {
    * choice, not a formality — but Wix marks the embroidery questions mandatory
    * at the product level, so it asks them either way. Hide them on "No".
    */
-  const embroideryDeclined = options.some(
-    (option) =>
-      /embroider/i.test(option.name) &&
-      (selected[option.name] ?? "").toLowerCase() === "no"
-  );
+  const embroideryDeclined = isEmbroideryDeclined(options, selected);
   const visibleTextFields = embroideryDeclined ? [] : textFields;
+
+  /*
+   * Same reasoning for the logo-count axis: "Embroidery: No" sitting next to
+   * "Logos to be embroidered: 1" reads as a bug. Hiding it is safe because the
+   * choice carries no price on any of these products — every variant of a
+   * given jacket costs the same — so the shopper pays what the page quotes
+   * whichever variant this resolves to. The pick is kept rather than reset, so
+   * switching back to "Yes" restores what they had.
+   */
+  const visibleOptions = embroideryDeclined
+    ? options.filter((option) => !/logo/i.test(option.name))
+    : options;
 
   const missingText = visibleTextFields.filter(
     (field) => field.mandatory && !(customText[field.title] ?? "").trim()
@@ -249,8 +287,8 @@ export function ProductDetail({ product }: { product: Product }) {
           </p>
         )}
 
-        {options.length > 0
-          ? options.map((option) => (
+        {visibleOptions.length > 0
+          ? visibleOptions.map((option) => (
               <div key={option.name} className="mt-6">
                 <label
                   htmlFor={`option-${option.name.replace(/\W+/g, "-")}`}
