@@ -42,6 +42,26 @@ const checkoutClient = createClient({
 
 export class CheckoutError extends Error {}
 
+/*
+ * `options` carries both halves of what eCommerce needs to resolve the item:
+ * which variant, and the answers to the product's custom text fields keyed by
+ * their exact Wix title. Omitting a mandatory text field does not fail the
+ * call — Wix returns 200 and silently drops the line — so startWixCheckout
+ * checks the response rather than trusting it.
+ */
+function toCatalogOptions(item: CartItem) {
+  const options: Record<string, unknown> = {};
+
+  if (item.variantId && item.variantId !== ONE_SIZE_VARIANT_ID) {
+    options.variantId = item.variantId;
+  }
+  if (item.customText && Object.keys(item.customText).length > 0) {
+    options.customTextFields = item.customText;
+  }
+
+  return Object.keys(options).length > 0 ? { options } : {};
+}
+
 function toLineItems(items: CartItem[]) {
   return items
     .filter((item) => !item.isCustom)
@@ -50,9 +70,7 @@ function toLineItems(items: CartItem[]) {
       catalogReference: {
         appId: WIX_STORES_APP_ID,
         catalogItemId: item.wixId,
-        ...(item.variantId && item.variantId !== ONE_SIZE_VARIANT_ID
-          ? { options: { variantId: item.variantId } }
-          : {}),
+        ...toCatalogOptions(item),
       },
     }));
 }
@@ -116,14 +134,35 @@ export async function startWixCheckout(items: CartItem[]): Promise<string> {
     );
   }
 
+  const lineItems = toLineItems(items);
+
   const created = await checkoutClient.checkout.createCheckout({
-    lineItems: toLineItems(items),
+    lineItems,
     customLineItems: toCustomLineItems(items),
     channelType: checkout.ChannelType.WEB,
   });
 
   if (!created?._id) {
     throw new CheckoutError("Wix did not return a checkout to redirect to.");
+  }
+
+  /*
+   * Wix accepts a line item it cannot resolve and then leaves it out of the
+   * checkout, still answering 200 — a product with a mandatory custom text
+   * field is dropped this way when the field is missing. Without this check
+   * the shopper is redirected to a Wix page that tells them their cart is
+   * empty, which is how this shipped broken for the embroidery products.
+   */
+  const accepted = (created.lineItems ?? []).filter(
+    (line) => line.catalogReference
+  );
+
+  if (accepted.length < lineItems.length) {
+    throw new CheckoutError(
+      "Some items in your cart couldn't be sent to checkout. Please remove " +
+        "them and re-add them from the product page, or contact us and we'll " +
+        "place the order for you."
+    );
   }
 
   const origin = window.location.origin;
