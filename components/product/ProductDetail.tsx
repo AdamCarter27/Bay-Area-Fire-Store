@@ -163,7 +163,7 @@ export function ProductDetail({ product }: { product: Product }) {
       {/* Lightbox */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/90 p-4"
           onClick={() => setLightboxOpen(false)}
         >
           <button
