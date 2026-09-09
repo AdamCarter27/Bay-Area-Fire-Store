@@ -38,6 +38,7 @@ export type Product = {
   // and we split those collections into two namespaces: garment categories
   // (categoryGroups.ts) and department/brand lines (brands.ts). Either may be
   // empty when a product's collections have no mapping yet.
+  images?: string[];
   categories: string[]; // e.g. ["hoodies"], ["tees", "youth"]
   collections: string[]; // department or brand slugs, e.g. ["sffd"]
   badge?: string; // small merchandising flag, e.g. "New", "Best seller"
