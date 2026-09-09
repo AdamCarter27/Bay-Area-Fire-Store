@@ -1,20 +1,139 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Product } from "@/lib/data/types";
+import type { Product, ProductVariant } from "@/lib/data/types";
 import { useCart } from "@/components/cart/CartContext";
 import { ProductImage } from "@/components/product/ProductImage";
 
-export function ProductDetail({ product }: { product: Product }) {
-  const [variantId, setVariantId] = useState(
-    (product.variants.find((v) => v.inStock) ?? product.variants[0]).id
+/*
+ * The variant a set of choices resolves to. Wix does not guarantee a variant
+ * for every combination — an owner can delete one — so this can miss, and the
+ * caller has to handle that rather than assume the matrix is complete.
+ */
+function findVariant(
+  variants: ProductVariant[],
+  choices: Record<string, string>
+): ProductVariant | undefined {
+  return variants.find((variant) =>
+    Object.entries(choices).every(
+      ([axis, choice]) => variant.choices?.[axis] === choice
+    )
   );
+}
+
+export function ProductDetail({ product }: { product: Product }) {
+  const defaultVariant =
+    product.variants.find((v) => v.inStock) ?? product.variants[0];
+  const [variantId, setVariantId] = useState(defaultVariant.id);
+  /*
+   * Answers to the product's Wix custom text fields, keyed by field title.
+   * Mandatory ones gate the Add to Cart button: Wix throws the whole line item
+   * away when one is missing, and does it without an error, so the only place
+   * this can be caught is before the item ever reaches the cart.
+   */
+  const [customText, setCustomText] = useState<Record<string, string>>({});
+  const [showTextErrors, setShowTextErrors] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const { addToCart } = useCart();
 
-  const variant = product.variants.find((v) => v.id === variantId)!;
+  const variant =
+    product.variants.find((v) => v.id === variantId) ?? defaultVariant;
   const soldOut = !product.inStock || !variant.inStock;
+
+  /*
+   * One picker per option axis. Wix models variants as the full matrix of
+   * choices, so without this the page offers a single list of every
+   * combination under a "Size" label — "S / No", "Black / M / Yes" — which
+   * tells a shopper nothing about what they're choosing.
+   */
+  const options = product.options ?? [];
+  const selected = variant.choices ?? {};
+
+  /*
+   * Picking a choice on one axis can land on a combination that has no
+   * variant. Rather than refuse the click, keep the choice and move the other
+   * axes to the nearest variant that has it, preferring one in stock — the
+   * same thing a shopper would do by hand.
+   */
+  const selectChoice = (axis: string, choice: string) => {
+    const exact = findVariant(product.variants, { ...selected, [axis]: choice });
+    const nearest =
+      exact ??
+      product.variants.find((v) => v.choices?.[axis] === choice && v.inStock) ??
+      product.variants.find((v) => v.choices?.[axis] === choice);
+
+    if (nearest) setVariantId(nearest.id);
+  };
+
+  // Whether a choice is buyable given what's picked on the other axes, so the
+  // dropdown can say "sold out" against the specific combination rather than
+  // against the product as a whole.
+  const choiceState = (axis: string, choice: string) => {
+    const rest = Object.fromEntries(
+      Object.entries(selected).filter(([key]) => key !== axis)
+    );
+    const match = findVariant(product.variants, { ...rest, [axis]: choice });
+    if (match) return match.inStock ? "" : " — sold out";
+
+    // No variant for this combination at all; it exists on its own axis but
+    // not alongside the current picks.
+    return product.variants.some((v) => v.choices?.[axis] === choice)
+      ? " — unavailable in this combination"
+      : " — unavailable";
+  };
+
+  const textFields = product.customTextFields ?? [];
+
+  /*
+   * These products sell with or without embroidery — the Yes/No axis is a real
+   * choice, not a formality — but Wix marks the embroidery questions mandatory
+   * at the product level, so it asks them either way. Hide them on "No".
+   */
+  const embroideryDeclined = options.some(
+    (option) =>
+      /embroider/i.test(option.name) &&
+      (selected[option.name] ?? "").toLowerCase() === "no"
+  );
+  const visibleTextFields = embroideryDeclined ? [] : textFields;
+
+  const missingText = visibleTextFields.filter(
+    (field) => field.mandatory && !(customText[field.title] ?? "").trim()
+  );
+
+  /*
+   * What a hidden-but-mandatory field is answered with. Wix throws the whole
+   * line item away when a mandatory field arrives empty, so declining
+   * embroidery still has to say something — this is the site answering on the
+   * shopper's behalf, and it shows on the order so the owner can see the
+   * jacket ships plain. Once the fields are marked optional in Wix this stops
+   * being sent at all, with no change here.
+   */
+  const NO_EMBROIDERY_ANSWER = "No embroidery selected";
+
+  const handleAddToCart = () => {
+    if (missingText.length > 0) {
+      setShowTextErrors(true);
+      return;
+    }
+    // Trimmed: Wix stores these verbatim on the order and the owner reads them
+    // to set up the embroidery.
+    const answers = Object.fromEntries(
+      textFields
+        .map((field) => [
+          field.title,
+          embroideryDeclined
+            ? field.mandatory
+              ? NO_EMBROIDERY_ANSWER
+              : ""
+            : (customText[field.title] ?? "").trim(),
+        ])
+        .filter(([, value]) => value)
+    );
+    addToCart(product, variant, answers);
+    setCustomText({});
+    setShowTextErrors(false);
+  };
 
   const images = product.images ?? [];
   const showPrev = () =>
@@ -130,29 +249,105 @@ export function ProductDetail({ product }: { product: Product }) {
           </p>
         )}
 
-        {product.variants.length > 1 && (
-          <div className="mt-6">
-            <label htmlFor="variant" className="text-sm font-medium text-ink">
-              Size
-            </label>
-            <select
-              id="variant"
-              value={variantId}
-              onChange={(e) => setVariantId(e.target.value)}
-              className="mt-2 block w-full rounded-md border border-line bg-paper px-3 py-2 text-sm text-ink"
-            >
-              {product.variants.map((v) => (
-                <option key={v.id} value={v.id} disabled={!v.inStock}>
-                  {v.title}
-                  {v.inStock ? "" : " — sold out"}
-                </option>
-              ))}
-            </select>
+        {options.length > 0
+          ? options.map((option) => (
+              <div key={option.name} className="mt-6">
+                <label
+                  htmlFor={`option-${option.name.replace(/\W+/g, "-")}`}
+                  className="text-sm font-medium text-ink"
+                >
+                  {option.name}
+                </label>
+                <select
+                  id={`option-${option.name.replace(/\W+/g, "-")}`}
+                  value={selected[option.name] ?? ""}
+                  onChange={(e) => selectChoice(option.name, e.target.value)}
+                  className="mt-2 block w-full rounded-md border border-line bg-paper px-3 py-2 text-sm text-ink"
+                >
+                  {option.choices.map((choice) => (
+                    <option key={choice} value={choice}>
+                      {choice}
+                      {choiceState(option.name, choice)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))
+          : product.variants.length > 1 && (
+              /* No option metadata (mock catalog): fall back to one list of
+                 the variants as they come. */
+              <div className="mt-6">
+                <label htmlFor="variant" className="text-sm font-medium text-ink">
+                  Size
+                </label>
+                <select
+                  id="variant"
+                  value={variantId}
+                  onChange={(e) => setVariantId(e.target.value)}
+                  className="mt-2 block w-full rounded-md border border-line bg-paper px-3 py-2 text-sm text-ink"
+                >
+                  {product.variants.map((v) => (
+                    <option key={v.id} value={v.id} disabled={!v.inStock}>
+                      {v.title}
+                      {v.inStock ? "" : " — sold out"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+        {visibleTextFields.length > 0 && (
+          <div className="mt-6 flex flex-col gap-4">
+            {visibleTextFields.map((field) => {
+              const value = customText[field.title] ?? "";
+              const invalid =
+                showTextErrors && field.mandatory && !value.trim();
+              const inputId = `custom-text-${field.title.replace(/\W+/g, "-")}`;
+
+              return (
+                <div key={field.title}>
+                  <label
+                    htmlFor={inputId}
+                    className="text-sm font-medium text-ink"
+                  >
+                    {field.title}
+                    {field.mandatory && (
+                      <span className="text-signal" aria-hidden="true">
+                        {" "}
+                        *
+                      </span>
+                    )}
+                  </label>
+                  <textarea
+                    id={inputId}
+                    value={value}
+                    rows={2}
+                    maxLength={field.maxLength}
+                    required={field.mandatory}
+                    aria-invalid={invalid || undefined}
+                    onChange={(e) =>
+                      setCustomText((prev) => ({
+                        ...prev,
+                        [field.title]: e.target.value,
+                      }))
+                    }
+                    className={`mt-2 block w-full rounded-md border bg-paper px-3 py-2 text-sm text-ink ${
+                      invalid ? "border-signal" : "border-line"
+                    }`}
+                  />
+                  {invalid && (
+                    <p className="mt-1 text-xs text-signal">
+                      This is required to place the order.
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
         <button
-          onClick={() => addToCart(product, variant)}
+          onClick={handleAddToCart}
           disabled={soldOut}
           className="mt-6 rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >

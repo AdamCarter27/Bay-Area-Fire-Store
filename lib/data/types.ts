@@ -10,6 +10,43 @@ export type ProductVariant = {
   title: string; // e.g. size or color, "M" / "Navy"
   price: number; // in USD
   inStock: boolean; // false = sold out; the option stays visible but unbuyable
+  /*
+   * The choice this variant represents on each option axis, keyed by axis name
+   * ({ Size: "M", Color: "Navy" }). Present whenever the product carries
+   * `options`, which is what lets the PDP offer one picker per axis instead of
+   * one list of every combination. Absent for one-size and mock products.
+   */
+  choices?: Record<string, string>;
+};
+
+/*
+ * One axis of choice on a product — Wix's "product options". A jacket sold in
+ * 7 sizes × 2 colors has two of these and 14 variants; the PDP renders the
+ * axes and resolves the variant from what's picked, because a single dropdown
+ * of all 14 combinations reads as gibberish ("Size: S / No").
+ */
+export type ProductOption = {
+  // The Wix option name, shown as the picker's label: "Size", "Color",
+  // "Name Embroidery".
+  name: string;
+  // Choice labels in the order Wix lists them. These match the values in
+  // ProductVariant.choices, so the two can be joined by string equality.
+  choices: string[];
+};
+
+/*
+ * A free-text field the Wix product requires the shopper to fill in — the
+ * embroidery copy, the name to stitch on a jacket. Wix drops the entire line
+ * item when a mandatory one is missing, and does it silently: createCheckout
+ * still answers 200, just with an empty cart. So the PDP has to collect these
+ * and the cart has to carry them through to checkout.
+ */
+export type ProductCustomTextField = {
+  // The exact Wix field title. It is also the key eCommerce expects inside
+  // catalogReference.options.customTextFields, so it must not be reworded.
+  title: string;
+  mandatory: boolean;
+  maxLength: number;
 };
 
 // Mapper lives in lib/wix/get-prod.ts (@wix/stores product → Product):
@@ -25,6 +62,8 @@ export type ProductVariant = {
 //   inStock     ← product.stock?.inStock
 //   createdAt   ← product._createdDate
 //   sizes       ← variant choices on a size axis, run through normalizeSize()
+//   customTextFields ← product.customTextFields
+//   options     ← product.productOptions (name + choice descriptions)
 //   variants    ← product.variants flattened; Wix models options × choices as a
 //                 matrix (size AND color), so the mapper owns that flattening
 export type Product = {
@@ -55,6 +94,12 @@ export type Product = {
   // products with no size axis (stickers, coins, flags).
   sizes: string[];
   variants: ProductVariant[];
+  // The option axes the variants are built from. Absent when there is nothing
+  // to choose (one-size products) or when the source has no option metadata.
+  options?: ProductOption[];
+  // Free-text the shopper must supply before this product can be bought
+  // (embroidery instructions). Absent for everything off the custom rail.
+  customTextFields?: ProductCustomTextField[];
 };
 
 // Future mapper (@wix/stores collection → Collection):

@@ -1,6 +1,11 @@
 import type { products as wixProducts } from "@wix/stores";
 import { wixClient, getWixCollectionMap } from "@/lib/wix/client";
-import type { Product, ProductVariant } from "@/lib/data/types";
+import type {
+  Product,
+  ProductCustomTextField,
+  ProductOption,
+  ProductVariant,
+} from "@/lib/data/types";
 import { wixCategoryMap, wixBrandMap } from "@/lib/wix/collection-mapping";
 import {
   isSizeAxis,
@@ -104,6 +109,7 @@ export async function getWixProducts(): Promise<Product[]> {
     // categories as the rest of the product, instead of re-deriving a guess
     // from the title themselves.
     const variants = mapVariants(p, categories);
+    const options = mapOptions(p, categories);
     const images = (p.media?.items ?? []).map((item) => capImageSize(item.image?.url ?? "")).filter(Boolean);
 
     return {
@@ -123,6 +129,8 @@ export async function getWixProducts(): Promise<Product[]> {
       createdAt: p._createdDate ? new Date(p._createdDate).toISOString() : undefined,
       sizes: mapSizes(p, categories),
       variants,
+      options,
+      customTextFields: mapCustomTextFields(p),
     };
   });
 }
@@ -199,14 +207,88 @@ function mapVariants(p: WixProduct, categories: string[]): ProductVariant[] {
   }
 
   return variants.map((v) => {
-    const choiceValues = Object.values(v.choices ?? {}) as string[];
+    const choices = toChoiceMap(v.choices);
+    const choiceValues = Object.values(choices);
     return {
       id: v._id ?? "",
       title: choiceValues.length > 0 ? choiceValues.join(" / ") : "One size",
       price: v.variant?.priceData?.price ?? p.priceData?.price ?? 0,
       inStock: v.stock?.inStock ?? true,
+      ...(choiceValues.length > 0 ? { choices } : {}),
     };
   });
+}
+
+// Wix types a variant's choices loosely (numbers and nulls turn up); the UI
+// matches choices to option labels by string equality, so anything that isn't
+// a string is dropped rather than coerced into a label nothing will match.
+function toChoiceMap(
+  choices: Record<string, unknown> | undefined | null
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(choices ?? {}).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string"
+    )
+  );
+}
+
+/*
+ * The option axes the PDP renders a picker for — "Size", "Color", "Name
+ * Embroidery". Wix keeps these separately from the variants, so this pairs
+ * them up: an axis is only offered when the variants actually carry a choice
+ * on it, which keeps a stale option left over in the Wix dashboard from
+ * drawing a picker that can never resolve to a variant.
+ *
+ * A color choice is stored as a hex value with the human name in
+ * `description` ("#000080" / "Navy"), and variants reference the name — so the
+ * description is what has to come through here.
+ */
+function mapOptions(
+  p: WixProduct,
+  categories: string[]
+): ProductOption[] | undefined {
+  const variants = collapseVariants(p, categories);
+  if (!p.manageVariants || variants.length === 0) return undefined;
+
+  const options = (p.productOptions ?? [])
+    .map((option) => {
+      const name = option.name ?? "";
+      const inVariants = new Set(
+        variants
+          .map((v) => toChoiceMap(v.choices)[name])
+          .filter((choice): choice is string => Boolean(choice))
+      );
+
+      return {
+        name,
+        choices: (option.choices ?? [])
+          .map((choice) => choice.description ?? choice.value ?? "")
+          .filter((choice) => inVariants.has(choice)),
+      };
+    })
+    .filter((option) => option.name && option.choices.length > 0);
+
+  return options.length > 0 ? options : undefined;
+}
+
+/*
+ * The free-text fields Wix requires on a product (embroidery copy, the name to
+ * stitch). Carried through the UI because eCommerce silently discards a line
+ * item whose mandatory fields are missing — see lib/wix/checkout.ts.
+ */
+function mapCustomTextFields(
+  p: WixProduct
+): ProductCustomTextField[] | undefined {
+  const fields = (p.customTextFields ?? [])
+    .filter((field) => field.title)
+    .map((field) => ({
+      title: field.title!,
+      mandatory: field.mandatory ?? false,
+      // Wix's own default when the owner leaves the limit blank.
+      maxLength: field.maxLength ?? 500,
+    }));
+
+  return fields.length > 0 ? fields : undefined;
 }
 
 /*
