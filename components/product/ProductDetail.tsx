@@ -66,7 +66,7 @@ export function ProductDetail({ product }: { product: Product }) {
           </div>
         )}
 
-        <div className="relative order-1 min-w-0 flex-1 self-start sm:order-2">
+        <div className="relative order-1 min-w-0 flex-1 sm:self-start sm:order-2">
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
