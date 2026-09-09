@@ -5,9 +5,14 @@
  *
  * Set NEXT_PUBLIC_SITE_URL at deploy time; the localhost fallback only keeps
  * local development from warning.
+ *
+ * `||` rather than `??` on purpose: a deploy context with the variable cleared
+ * in the Netlify UI can arrive as an empty string rather than as unset, and an
+ * empty SITE_URL takes down the build — `new URL("")` throws where
+ * app/layout.tsx builds metadataBase.
  */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 /**
  * The one origin the live store is served from. Anything else — a
