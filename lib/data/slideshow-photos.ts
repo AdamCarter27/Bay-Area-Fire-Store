@@ -85,6 +85,10 @@ export const slideshowPhotos: SlideshowPhoto[] = [
         alt: "Helmets",
     },
     {
+        src:"/media/slide20.jpg",
+        alt: "front facing firetruck photo",
+    },
+    {
         src:"/media/slide22.JPG",
         alt: "Firefighter in city streets with children",
     }
