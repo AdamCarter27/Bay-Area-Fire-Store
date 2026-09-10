@@ -4,6 +4,7 @@ import { CustomWorkDeck } from "@/components/home/CustomWorkDeck";
 import { CollectionsTeaser } from "@/components/home/CollectionsTeaser";
 import { FeatureDepartmentSection } from "@/components/home/FeatureDepartment";
 import { StoryStrip } from "@/components/home/StoryStrip";
+import { Slideshow } from "@/components/home/Slideshow";
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
     <div className="relative -mt-[71px]">
       <Hero />
       <div className="relative z-10 bg-paper">
+        <Slideshow />
         <FeaturedCollection />
         <CustomWorkDeck />
         <CollectionsTeaser />
