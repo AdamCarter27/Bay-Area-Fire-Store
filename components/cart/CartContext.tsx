@@ -18,16 +18,40 @@ export type CartItem = {
   price: number;
   quantity: number;
   isCustom?: boolean; // Flag to indicate if the item is a custom sticker
+  /*
+   * Answers to the product's Wix custom text fields, keyed by the exact field
+   * title (see ProductCustomTextField). Wix drops a line item whose mandatory
+   * fields are missing without reporting an error, so this travels with the
+   * item from the moment it is added.
+   */
+  customText?: Record<string, string>;
 };
+
+/*
+ * Identity of a cart line. Two of the same variant with different embroidery
+ * text are different lines — not one line of quantity two — so the key has to
+ * include the text as well as the slug and variant.
+ */
+export function lineKey(item: {
+  slug: string;
+  variantId: string;
+  customText?: Record<string, string>;
+}): string {
+  return `${item.slug}|${item.variantId}|${JSON.stringify(item.customText ?? {})}`;
+}
 
 type CartContextType = {
   items: CartItem[];
   hydrated: boolean;
   lastAdded: CartItem | null;
-  addToCart: (product: Product, variant: ProductVariant) => void;
+  addToCart: (
+    product: Product,
+    variant: ProductVariant,
+    customText?: Record<string, string>
+  ) => void;
   addCustomItem: (item: { title: string; price: number; quantity: number }) => void;
-  removeFromCart: (slug: string, variantId: string) => void;
-  updateQuantity: (slug: string, variantId: string, quantity: number) => void;
+  removeFromCart: (key: string) => void;
+  updateQuantity: (key: string, quantity: number) => void;
   clearCart: () => void;
   clearLastAdded: () => void;
 };
@@ -36,9 +60,10 @@ const CartContext = createContext<CartContextType | null>(null);
 /*
  * Versioned: carts saved before wixId existed can't reach Wix checkout, so
  * bumping the key drops them instead of leaving someone with a cart that looks
- * fine and then refuses to check out.
+ * fine and then refuses to check out. v3 does the same for carts saved before
+ * customText, whose embroidery items Wix would drop at checkout.
  */
-const STORAGE_KEY = "cart.v2";
+const STORAGE_KEY = "cart.v3";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -65,7 +90,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
 
-  function addToCart(product: Product, variant: ProductVariant) {
+  function addToCart(
+    product: Product,
+    variant: ProductVariant,
+    customText?: Record<string, string>
+  ) {
     const addedItem: CartItem = {
       slug: product.slug,
       title: product.title,
@@ -75,15 +104,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       variantTitle: variant.title,
       price: variant.price,
       quantity: 1,
+      ...(customText && Object.keys(customText).length > 0
+        ? { customText }
+        : {}),
     };
 
+    const key = lineKey(addedItem);
+
     setItems((prev) => {
-      const existing = prev.find(
-        (item) => item.slug === product.slug && item.variantId === variant.id
-      );
+      const existing = prev.find((item) => lineKey(item) === key);
       if (existing) {
         return prev.map((item) =>
-          item.slug === product.slug && item.variantId === variant.id
+          lineKey(item) === key
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -112,20 +144,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   setLastAdded(addedItem);
 }
 
-  function removeFromCart(slug: string, variantId: string) {
-    setItems((prev) =>
-      prev.filter((item) => !(item.slug === slug && item.variantId === variantId))
-    );
+  function removeFromCart(key: string) {
+    setItems((prev) => prev.filter((item) => lineKey(item) !== key));
   }
 
-  function updateQuantity(slug: string, variantId: string, quantity: number) {
+  function updateQuantity(key: string, quantity: number) {
     if (quantity < 1) return;
     setItems((prev) =>
-      prev.map((item) =>
-        item.slug === slug && item.variantId === variantId
-          ? { ...item, quantity }
-          : item
-      )
+      prev.map((item) => (lineKey(item) === key ? { ...item, quantity } : item))
     );
   }
 

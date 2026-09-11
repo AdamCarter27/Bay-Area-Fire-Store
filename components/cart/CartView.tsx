@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart } from "@/components/cart/CartContext";
+import { useCart, lineKey } from "@/components/cart/CartContext";
 import { startWixCheckout } from "@/lib/wix/checkout";
 import {
   FREE_SHIPPING_THRESHOLD,
@@ -99,10 +99,12 @@ export function CartView({ stock }: { stock: CartStock }) {
         <div className="flex flex-col divide-y divide-line">
           {items.map((item) => {
             const soldOut = isCartItemUnavailable(stock, item);
+            const key = lineKey(item);
+            const customText = Object.entries(item.customText ?? {});
 
             return (
             <div
-              key={`${item.slug}-${item.variantId}`}
+              key={key}
               className="flex gap-5 py-6 first:pt-0"
             >
               <Link
@@ -136,6 +138,14 @@ export function CartView({ stock }: { stock: CartStock }) {
                     {item.title}
                   </Link>
                   <p className="mt-1 text-sm text-ash">{item.variantTitle}</p>
+                  {/* Embroidery answers, shown so the shopper can check what
+                      they typed before paying — it is not editable here, and
+                      Wix puts the same text on the order. */}
+                  {customText.map(([title, value]) => (
+                    <p key={title} className="mt-1 text-xs text-ash">
+                      <span className="font-medium">{title}</span> {value}
+                    </p>
+                  ))}
                   {soldOut && (
                     <p className="mt-1.5 text-sm font-medium text-signal">
                       Sold out — remove to check out
@@ -148,7 +158,7 @@ export function CartView({ stock }: { stock: CartStock }) {
                     <button
                       type="button"
                       onClick={() =>
-                        updateQuantity(item.slug, item.variantId, item.quantity - 1)
+                        updateQuantity(key, item.quantity - 1)
                       }
                       disabled={soldOut || item.quantity <= 1}
                       className="flex h-8 w-8 items-center justify-center text-ink disabled:opacity-30"
@@ -162,7 +172,7 @@ export function CartView({ stock }: { stock: CartStock }) {
                     <button
                       type="button"
                       onClick={() =>
-                        updateQuantity(item.slug, item.variantId, item.quantity + 1)
+                        updateQuantity(key, item.quantity + 1)
                       }
                       disabled={soldOut}
                       className="flex h-8 w-8 items-center justify-center text-ink disabled:opacity-30"
@@ -173,7 +183,7 @@ export function CartView({ stock }: { stock: CartStock }) {
                   </div>
 
                   <button
-                    onClick={() => removeFromCart(item.slug, item.variantId)}
+                    onClick={() => removeFromCart(key)}
                     className="text-sm text-ash underline transition-colors hover:text-signal"
                   >
                     Remove

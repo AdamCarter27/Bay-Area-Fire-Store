@@ -8,6 +8,7 @@ import { FilterDisclosure } from "@/components/shop/FilterDisclosure";
 import { ShopSearch } from "@/components/shop/ShopSearch";
 import { ProductCard } from "@/components/product/ProductCard";
 import { priceRanges } from "@/lib/data/priceRanges";
+import { newestSlugs } from "@/lib/data/new-arrivals";
 
 /*
  * The live catalog is 256 products. Rendering all of them is a slow, unusable
@@ -142,9 +143,18 @@ export default async function ShopPage({
   }
 
   if (activeGroup) {
-    filtered = filtered.filter((p) =>
-      p.categories.some((c) => activeGroup.categories.includes(c))
-    );
+    if (activeGroup.slug === "new-arrivals") {
+      /*
+       * Recency is decided against the whole catalog, not against whatever the
+       * other filters have left, so "New Arrivals + Hats" means the newest
+       * products that are hats — not the newest hats however old they are.
+       */
+      filtered = filtered.filter((p) => newestSlugs(allProducts).has(p.slug));
+    } else {
+      filtered = filtered.filter((p) =>
+        p.categories.some((c) => activeGroup.categories.includes(c))
+      );
+    }
   }
   if (activeBrand) {
     filtered = filtered.filter((p) => p.collections.includes(activeBrand.slug));
@@ -168,11 +178,24 @@ export default async function ShopPage({
     );
   }
 
-  // Buyable product leads; sold-out stays browsable at the end rather than
-  // vanishing, since the owner restocks the same designs.
-  filtered = [...filtered].sort(
-    (a, b) => Number(b.inStock) - Number(a.inStock)
-  );
+  /*
+   * Buyable product leads; sold-out stays browsable at the end rather than
+   * vanishing, since the owner restocks the same designs.
+   *
+   * Under New Arrivals, recency then decides. Wix returns the catalog
+   * oldest-first and won't sort on _createdDate, so without this the newest
+   * tab opens on the oldest product in it. Everywhere else the catalog order
+   * stands: `sort` is stable, so returning 0 leaves it untouched.
+   */
+  const newestFirst = activeGroup?.slug === "new-arrivals";
+
+  filtered = [...filtered].sort((a, b) => {
+    const byStock = Number(b.inStock) - Number(a.inStock);
+    if (byStock !== 0) return byStock;
+    return newestFirst
+      ? (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+      : 0;
+  });
 
   const shown = Math.max(PAGE_SIZE, Number(showParam) || 0);
   const visible = filtered.slice(0, shown);
