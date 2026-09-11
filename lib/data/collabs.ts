@@ -16,7 +16,7 @@ export const collabs: Collab[] = [
   },
   {
     slug: "st-michaels-hero-bookings",
-    name: "St. Michael's Hero Bookings",
+    name: "St. Michael's First Responder Training",
     description: "A Bay Area training provider offering hands-on certifications and courses for first responders and healthcare providers, including BLS, ACLS, PALS, AMLS, PHTLS, and Stop the Bleed.",
     href: "https://stmichaels-hero-bookings.lovable.app/#courses",
     image: "/media/collabs2.jpeg",
