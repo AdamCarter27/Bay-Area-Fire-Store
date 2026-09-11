@@ -6,7 +6,7 @@ export default function CollabsPage() {
     <div>
       <div className="mx-auto max-w-7xl px-5 pt-14 sm:px-8">
         <h1 className="font-display text-[clamp(1.8rem,4vw,2.6rem)] font-semibold tracking-tight text-ink">
-          Check out and support our collabs
+          Check out and support our affiliates
         </h1>
         <p className="mt-4 max-w-2xl text-ash">
           The departments, crews, and causes we've partnered with.

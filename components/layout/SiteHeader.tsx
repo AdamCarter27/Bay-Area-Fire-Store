@@ -10,7 +10,7 @@ import { CartLink } from "@/components/cart/CartLink";
 
 const navLinks = [
   { href: "/brands", label: "Brands" },
-  { href: "/collabs", label: "Collabs" },
+  { href: "/collabs", label: "Affiliates" },
   { href: "/custom-order", label: "Custom Order Form" },
   // Custom Stickers link parked at the owner's request until the sticker page
   // launches — restore alongside the notFound() in its page.tsx and the
