@@ -18,72 +18,72 @@ export type RecentWorkPhoto = {
 
 export const recentWork: RecentWorkPhoto[] = [
   {
-    src: "/media/BayAreaFireStoreCustomWork1.jpeg",
+    src: "/media/BayAreaFireStoreCustomWork1.webp",
     alt: 'Navy Carhartt quarter-zip embroidered with the name "McDermott" and an SFFD Ocean\'s Engine, Truck and Battalion 9 shield',
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork10.jpg",
+    src: "/media/BayAreaFireStoreCustomWork10.webp",
     alt: "Black tee screen printed with a Badfish Beerfest shark graphic in sunset colors",
     label: "Screen print",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork14.jpg",
+    src: "/media/BayAreaFireStoreCustomWork14.webp",
     alt: "NB Fire Tactics caps beside a run of matching embroidered patches",
     label: "Patches",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork2.jpeg",
+    src: "/media/BayAreaFireStoreCustomWork2.webp",
     alt: "Black snapback embroidered with the Fire Nuggets California mark — by firefighters, for firefighters",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork4.jpg",
+    src: "/media/BayAreaFireStoreCustomWork4.webp",
     alt: "Navy cap embroidered with a green San Francisco shamrock monogram",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork3.png",
+    src: "/media/BayAreaFireStoreCustomWork3.webp",
     alt: 'Two-tone work shirt with a "Bay Area Mechanic" patch and Acura & Honda Certified Specialist embroidery',
     label: "Patches",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork13.jpg",
+    src: "/media/BayAreaFireStoreCustomWork13.webp",
     alt: "Grey cap embroidered with an SFFD Truck 5 Engine roundel, held up in the firehouse",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork12.jpg",
+    src: "/media/BayAreaFireStoreCustomWork12.webp",
     alt: 'Light blue cap embroidered with a green "43", resting against a firehouse wall',
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork5.jpg",
+    src: "/media/BayAreaFireStoreCustomWork5.webp",
     alt: "Navy seven-panel cap with a gold San Francisco monogram",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork6.jpg",
+    src: "/media/BayAreaFireStoreCustomWork6.webp",
     alt: "Navy trucker cap embroidered with a red MA monogram",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork7.jpg",
+    src: "/media/BayAreaFireStoreCustomWork7.webp",
     alt: "Black rope cap embroidered with the Bay Area Fire Store script mark",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork8.jpg",
+    src: "/media/BayAreaFireStoreCustomWork8.webp",
     alt: "Navy trucker cap embroidered with a white San Francisco shark monogram",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork9.jpg",
+    src: "/media/BayAreaFireStoreCustomWork9.webp",
     alt: "Navy rope cap with the Bay Area Fire Store script embroidered across the front",
     label: "Embroidery",
   },
   {
-    src: "/media/BayAreaFireStoreCustomWork11.jpg",
+    src: "/media/BayAreaFireStoreCustomWork11.webp",
     alt: "Navy cap embroidered with a red and white MC monogram",
     label: "Embroidery",
   },

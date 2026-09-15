@@ -28,7 +28,7 @@ export const services: Service[] = [
   },
   {
     name: "Screen Print",
-    image: "/media/BayAreaFireStoreScreenPrint.jpg",
+    image: "/media/BayAreaFireStoreScreenPrint.webp",
     items: ["Shirts", "Sweatshirts", "Polos", "Youth Team Sports"],
   },
 ];

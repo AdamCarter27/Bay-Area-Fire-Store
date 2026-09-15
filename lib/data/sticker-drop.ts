@@ -1,9 +1,9 @@
 export const stickerDrop: { src: string }[] = [
-  { src: "/media/stickerdrop1.png" },
-  { src: "/media/stickerdrop2.png" },
-  { src: "/media/stickerdrop3.png" },
-  { src: "/media/stickerdrop4.png" },
-  { src: "/media/stickerdrop5.png" },
-  { src: "/media/stickerdrop6.png" },
-  { src: "/media/stickerdrop7.png" },
+  { src: "/media/stickerdrop1.webp" },
+  { src: "/media/stickerdrop2.webp" },
+  { src: "/media/stickerdrop3.webp" },
+  { src: "/media/stickerdrop4.webp" },
+  { src: "/media/stickerdrop5.webp" },
+  { src: "/media/stickerdrop6.webp" },
+  { src: "/media/stickerdrop7.webp" },
 ];  
