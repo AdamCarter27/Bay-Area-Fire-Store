@@ -167,7 +167,19 @@ async function queryAllProducts() {
  * though there's only one physical item — those collapse to a single variant.
  */
 function hasRealHatSizeDifference(p: WixProduct): boolean {
-  return (p.variants ?? []).some((v) =>
+  const variants = p.variants ?? [];
+
+  // If any variant carries a non-size axis (style, color, etc.), the
+  // variants are genuinely different products regardless of what the size
+  // axis says — don't collapse.
+  const hasNonSizeAxis = variants.some((v) =>
+    Object.keys(v.choices ?? {}).some((key) => !isSizeAxis(key))
+  );
+  if (hasNonSizeAxis) return true;
+
+  // Otherwise, only a genuine fitted size counts as a real difference —
+  // a stray "Regular"/"X-Large" leftover on an adjustable hat does not.
+  return variants.some((v) =>
     Object.entries(v.choices ?? {}).some(([key, value]) => {
       if (!isSizeAxis(key) || typeof value !== "string") return false;
       const token = normalizeSize(value, key);
