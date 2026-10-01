@@ -21,4 +21,11 @@ export const collabs: Collab[] = [
     href: "https://stmichaels-hero-bookings.lovable.app/#courses",
     image: "/media/collabs2.jpeg",
   },
+  {
+    slug: "front-seat-academy",
+    name: "Front Seat Academy",
+    description: "A Bay Area fire captain-led academy offering promotional prep courses, leadership coaching, and officer development training to help firefighters prepare for Fire Officer testing, assessment centers, and company officer roles.",
+    href: "https://frontseatacademy.com/",
+    image: "/media/FrontSeatAcademy.webp",
+  }
 ];
