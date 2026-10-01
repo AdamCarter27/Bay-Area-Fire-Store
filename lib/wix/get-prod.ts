@@ -53,6 +53,8 @@ type WixProduct = wixProducts.Product;
  */
 const TITLE_CATEGORY_HINTS: [RegExp, string][] = [
   [/\blong[- ]sleeve/i, "long-sleeves"],
+  // Above sweatshirts so "Hooded Jacket" lands on jackets, not via "hooded".
+  [/\bjacket|\bvest\b/i, "jackets"],
   [/\bcrewneck|\bsweatshirt|\bhoodie|\bhooded\b/i, "sweatshirts"],
   [/\bsweatpant|\bjogger/i, "sweatpants"],
   [/\btank top|\btank\b/i, "tank-tops"],
@@ -62,7 +64,6 @@ const TITLE_CATEGORY_HINTS: [RegExp, string][] = [
   [/\bshirt\b/i, "tees"],
   [/\bbeanie/i, "beanies"],
   [/\bsnapback|\bdad hat\b|\bhat\b|\bcap\b/i, "hats"],
-  [/\bjacket|\bvest\b/i, "jackets"],
   [/\bsticker/i, "stickers"],
   [/\bchallenge coin|\bcoin\b/i, "challenge-coins"],
   [/\bflag\b/i, "custom-fire-flags"],
