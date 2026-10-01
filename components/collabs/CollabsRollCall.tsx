@@ -17,6 +17,7 @@ export function CollabsRollCall({ collabs }: { collabs: Collab[] }) {
               alt={collab.name}
               fill
               sizes="(min-width: 640px) 288px, 100vw"
+              unoptimized
               className="object-contain p-6"
             />
           </div>

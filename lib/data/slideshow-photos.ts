@@ -4,19 +4,19 @@ export type SlideshowPhoto = {
 };
 export const slideshowPhotos: SlideshowPhoto[] = [
     {
-        src: "/media/slide1.JPG", 
+        src: "/media/slide1.webp", 
         alt: "Firefighter in action"
     },
     {
-        src:"/media/slide2.JPG",
+        src:"/media/slide2.webp",
         alt:"Fire Truck in station"
     },
     {
-        src:"/media/slide3.JPG",
+        src:"/media/slide3.webp",
         alt: "Vinatage Fire Photo"
     },
     {
-        src:"/media/slide4.JPG",
+        src:"/media/slide4.webp",
         alt: "SFFD firefighters"
     },
     {
@@ -24,72 +24,72 @@ export const slideshowPhotos: SlideshowPhoto[] = [
         alt: "Fire Engine"
     },
     {
-        src:"/media/slide6.JPG",
+        src:"/media/slide6.webp",
         alt: "Asian Fire Fighter Association Photo"
     },
     {
-        src:"/media/slide7.JPG",
+        src:"/media/slide7.webp",
         alt: "Firefighters with fire truck"
     },
     {
-        src:"/media/slide8.JPG",
+        src:"/media/slide8.webp",
         alt: "Firefighter in city street"
     },
     {
-        src:"/media/slide9.JPG",
+        src:"/media/slide9.webp",
         alt: "K9 Group"
     },
     {
-        src:"/media/slide10.JPG",
+        src:"/media/slide10.webp",
         alt:"E44 firefighters"
     },
     {
-        src:"/media/slide11.JPG",
+        src:"/media/slide11.webp",
         alt:"Active fire"
     },
     {
-        src:"/media/slide12.jpg",
+        src:"/media/slide12.webp",
         alt: "Firefighter with equipment"
     },
     {
-        src:"/media/slide13.JPG",
+        src:"/media/slide13.webp",
         alt: "Duo photo"
     },
     {
-        src:"/media/slide14.JPG",
+        src:"/media/slide14.webp",
         alt:"San Francisco Fire Department International Airport"
     },
     {
-        src:"/media/slide15.jpg",
+        src:"/media/slide15.webp",
         alt: "SFFD firetruck photo"
     },
     {
-        src:"/media/slide16.jpg",
+        src:"/media/slide16.webp",
         alt: "Firefighter fishing"
     
     },
     {
-        src:"/media/slide17.jpg",
+        src:"/media/slide17.webp",
         alt: "Firefighter dinner",
     },
     {
-        src:"/media/slide18.jpg",
+        src:"/media/slide18.webp",
         alt: "Fire Nuggets",
     },
     {
-        src:"/media/slide19.JPG",
+        src:"/media/slide19.webp",
         alt: "Firefighters with hose",
     },
     {
-        src:"/media/slide21.jpg",
+        src:"/media/slide21.webp",
         alt: "Helmets",
     },
     {
-        src:"/media/slide20.jpg",
+        src:"/media/slide20.webp",
         alt: "front facing firetruck photo",
     },
     {
-        src:"/media/slide22.JPG",
+        src:"/media/slide22.webp",
         alt: "Firefighter in city streets with children",
     }
 

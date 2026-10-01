@@ -54,6 +54,7 @@ export function Slideshow() {
               alt={photo.alt}
               fill
               sizes="416px"
+              unoptimized
               className="object-cover"
             />
           </div>
