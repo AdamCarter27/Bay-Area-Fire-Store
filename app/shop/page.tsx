@@ -182,19 +182,16 @@ export default async function ShopPage({
    * Buyable product leads; sold-out stays browsable at the end rather than
    * vanishing, since the owner restocks the same designs.
    *
-   * Under New Arrivals, recency then decides. Wix returns the catalog
-   * oldest-first and won't sort on _createdDate, so without this the newest
-   * tab opens on the oldest product in it. Everywhere else the catalog order
-   * stands: `sort` is stable, so returning 0 leaves it untouched.
+   * Recency then decides, in every section. Wix returns the catalog
+   * oldest-first and won't sort on _createdDate, so without this each section
+   * opens on its oldest product and the "New" items sink to the bottom.
+   * Products without a createdAt (mock data) tie, and `sort` is stable, so
+   * their catalog order stands.
    */
-  const newestFirst = activeGroup?.slug === "new-arrivals";
-
   filtered = [...filtered].sort((a, b) => {
     const byStock = Number(b.inStock) - Number(a.inStock);
     if (byStock !== 0) return byStock;
-    return newestFirst
-      ? (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
-      : 0;
+    return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
   });
 
   const shown = Math.max(PAGE_SIZE, Number(showParam) || 0);
