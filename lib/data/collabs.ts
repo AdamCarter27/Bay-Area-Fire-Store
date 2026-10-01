@@ -27,5 +27,12 @@ export const collabs: Collab[] = [
     description: "A Bay Area fire captain-led academy offering promotional prep courses, leadership coaching, and officer development training to help firefighters prepare for Fire Officer testing, assessment centers, and company officer roles.",
     href: "https://frontseatacademy.com/",
     image: "/media/FrontSeatAcademy.webp",
+  },
+  {
+    slug: "pacific-community-mortgage",
+    name: "Pacific Community Mortgage Group",
+    description: "A El Dorado Hills mortgage company founded by former paramedics and firefighters, offering home purchase and refinance loans with dedicated programs for first responders.",
+    href: "https://www.pcmghomeloans.com/",
+    image: "/media/collabs4.PNG",
   }
 ];
