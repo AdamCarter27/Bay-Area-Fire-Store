@@ -11,6 +11,7 @@ export const categoryGroups: CategoryGroup[] = [
   { slug: "hoodies-sweatshirts", label: "Hoodies & Sweatshirts", categories: ["hoodies", "sweatshirts"] },
   { slug: "sweatpants", label: "Sweatpants", categories: ["sweatpants"] },
   { slug: "tees-tanks", label: "T-Shirts & Tanks", categories: ["tees", "tank-tops", "long-sleeves"] },
+  {slug:"fundraiser-shirts", label:"Fundraiser Shirts",categories:["fundraiser-shirts"]},
   { slug: "youth", label: "Youth", categories: ["youth"] },
   { slug: "custom", label: "Custom Apparel & Headwear", categories: ["custom-apparel", "custom-headwear"] },
   {
@@ -22,5 +23,5 @@ export const categoryGroups: CategoryGroup[] = [
     slug: "accessories",
     label: "Accessories",
     categories: ["accessories", "stickers", "challenge-coins", "custom-fire-flags"],
-  },
+  }
 ];
