@@ -34,5 +34,12 @@ export const collabs: Collab[] = [
     description: "A El Dorado Hills mortgage company founded by former paramedics and firefighters, offering home purchase and refinance loans with dedicated programs for first responders.",
     href: "https://www.pcmghomeloans.com/",
     image: "/media/collabs4.PNG",
+  },
+  {
+    slug: "n6-fire-tactics",
+    name: "N6 Fire Tactics",
+    description: "N6 Fire Tactics provides hands-on training and resources for firefighters and emergency personnel. It focuses on real-world tactics, safety, and decision-making for first responders.",
+    href: "https://n6firetactics.com/",
+    image: "/media/collabs5.PNG",
   }
 ];
