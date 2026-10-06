@@ -6,7 +6,7 @@ export const wixCategoryMap: Record<string, string> = {
   "Sweatshirts": "sweatshirts",
   "Sweatpants": "sweatpants",
   "T-Shirts": "tees",
-  "Fundraiser Shirts": "fundraiser-shirts",
+  "Fundraiser": "fundraiser",
   "Tank Tops": "tank-tops",
   "Long Sleeve T-Shirts": "long-sleeves",
   "Embroidered T-Shirts": "tees",
