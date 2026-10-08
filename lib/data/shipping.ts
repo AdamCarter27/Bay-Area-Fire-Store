@@ -17,7 +17,7 @@
  * way to lose a sale at the last step.
  */
 
-export const SHIPPING_FLAT_RATE = 12;
+export const SHIPPING_FLAT_RATE = 14.99;
 export const FREE_SHIPPING_THRESHOLD = 150;
 
 /** What Wix will charge for shipping on a given subtotal. */
