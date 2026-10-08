@@ -25,6 +25,13 @@ export type CartItem = {
    * item from the moment it is added.
    */
   customText?: Record<string, string>;
+  /*
+   * The variant's option choices, keyed by option name (e.g. "Size": "M",
+   * "Pick up at event": "Yes") — see ProductVariant.choices. Carried so the
+   * cart can reason about a specific option's value (like pickup) without
+   * re-fetching the product. Undefined for a one-size/unmanaged variant.
+   */
+  choices?: Record<string, string>;
 };
 
 /*
@@ -106,6 +113,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantity: 1,
       ...(customText && Object.keys(customText).length > 0
         ? { customText }
+        : {}),
+      ...(variant.choices && Object.keys(variant.choices).length > 0
+        ? { choices: variant.choices }
         : {}),
     };
 

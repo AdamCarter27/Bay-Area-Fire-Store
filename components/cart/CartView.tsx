@@ -15,29 +15,20 @@ import {
 } from "@/lib/data/cart-stock";
 import { isWixMediaUrl } from "@/lib/wix/image-loader";
 
+// Exact Wix option name/value this product uses for event pickup — must match
+// what's configured in Wix exactly, including capitalization.
+const PICKUP_OPTION_NAME = "Pick up at event";
+const PICKUP_OPTION_VALUE = "Yes";
+
 export function CartView({ stock }: { stock: CartStock }) {
   const { items, removeFromCart, updateQuantity } = useCart();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
 
-  /*
-   * Split the cart by what Wix will still sell. Sold-out lines stay visible
-   * rather than being silently dropped — a cart that empties itself between
-   * visits looks broken, and the shopper may want to note what they lost.
-   */
   const unavailable = items.filter((item) => isCartItemUnavailable(stock, item));
   const hasUnavailable = unavailable.length > 0;
 
-  /*
-   * Payment happens on Wix, not here. This hands the line items over and sends
-   * the browser to the checkout Wix builds for them.
-   */
   const handleCheckout = async () => {
-    /*
-     * Belt and braces: the button is disabled in this state, but a stale
-     * client or a fast click should not get as far as Wix rejecting the whole
-     * checkout with an error that names no item.
-     */
     if (hasUnavailable) {
       setCheckoutError(
         "Remove the sold-out items above before checking out."
@@ -49,7 +40,6 @@ export function CartView({ stock }: { stock: CartStock }) {
     setRedirecting(true);
     try {
       const url = await startWixCheckout(items);
-      // Not router.push: this leaves our app for a Wix-hosted page.
       window.location.assign(url);
     } catch (error) {
       console.error("[checkout] could not start Wix checkout", error);
@@ -61,18 +51,33 @@ export function CartView({ stock }: { stock: CartStock }) {
       setRedirecting(false);
     }
   };
+
+  const shippableItems = items.filter(
+    (item) => !isCartItemUnavailable(stock, item) && !item.isCustom
+  );
+
+  const subtotal = shippableItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
   /*
-   * Sold-out lines are excluded from the totals: checkout is blocked until
-   * they are removed, so quoting a number that includes them would be quoting
-   * a total nobody can pay.
+   * If every shippable line in the cart is a pickup-selected item, the real
+   * Wix checkout will offer it free via the Fundraiser Event delivery
+   * profile — so show $0 here too rather than quoting a paid estimate that
+   * doesn't match what the shopper will actually see at checkout.
+   *
+   * A cart mixing a pickup item with a normal shippable item still falls
+   * back to the paid estimate: the non-pickup item needs real shipping
+   * regardless, so showing "Free" for the whole cart would be wrong.
    */
-  const subtotal = items
-    .filter((item) => !isCartItemUnavailable(stock, item))
-    .reduce((sum, item) => sum + item.price * item.quantity, 0);
-  // Mirrors the owner's Wix shipping profile so this figure matches what the
-  // checkout actually charges — see lib/data/shipping.ts. Tax is deliberately
-  // absent: it depends on the delivery address, which Wix collects.
-  const shipping = shippingFor(subtotal);
+  const allPickup =
+    shippableItems.length > 0 &&
+    shippableItems.every(
+      (item) => item.choices?.[PICKUP_OPTION_NAME] === PICKUP_OPTION_VALUE
+    );
+
+  const shipping = allPickup ? 0 : shippingFor(subtotal);
   const total = subtotal + shipping;
 
   if (items.length === 0) {
@@ -138,9 +143,6 @@ export function CartView({ stock }: { stock: CartStock }) {
                     {item.title}
                   </Link>
                   <p className="mt-1 text-sm text-ash">{item.variantTitle}</p>
-                  {/* Embroidery answers, shown so the shopper can check what
-                      they typed before paying — it is not editable here, and
-                      Wix puts the same text on the order. */}
                   {customText.map(([title, value]) => (
                     <p key={title} className="mt-1 text-xs text-ash">
                       <span className="font-medium">{title}</span> {value}
@@ -214,7 +216,13 @@ export function CartView({ stock }: { stock: CartStock }) {
             </div>
             <div className="flex justify-between text-ink-soft">
               <span>Shipping</span>
-              <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+              <span>
+                {shipping === 0
+                  ? allPickup
+                    ? "Free — pickup at event"
+                    : "Free"
+                  : `$${shipping.toFixed(2)}`}
+              </span>
             </div>
           </div>
 
@@ -224,9 +232,6 @@ export function CartView({ stock }: { stock: CartStock }) {
             </p>
           )}
 
-          {/* "Estimated" because tax is still to come — quoting a bare "Total"
-              here and then charging more at Wix is the kind of surprise that
-              loses the sale at the last step. */}
           <div className="mt-4 flex items-baseline justify-between border-t border-line pt-4 text-base font-semibold text-ink">
             <span>Estimated total</span>
             <span>${total.toFixed(2)}</span>
