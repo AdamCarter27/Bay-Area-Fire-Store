@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { FreeShippingBanner } from "@/components/layout/FreeShippingBanner";
 import { CartProvider } from "@/components/cart/CartContext";
 import { AddedToCartPopup } from "@/components/cart/AddedToCartPopUp";
+import { NewsletterSignup } from "@/components/layout/NewsletterSignup";
 import { socialLinks } from "@/lib/data/social";
 import { SITE_URL, IS_PRODUCTION_SITE } from "@/lib/site-url";
 import "./globals.css";
@@ -110,18 +111,21 @@ export default function RootLayout({
                   </Link>
                 ))}
               </nav>
-              <div className="flex gap-4 text-sm">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.id}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-ash transition-colors hover:text-ink"
-                  >
-                    {social.label}
-                  </a>
-                ))}
+              <div className="flex flex-col gap-8">
+                <NewsletterSignup />
+                <div className="flex gap-4 text-sm">
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.id}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-ash transition-colors hover:text-ink"
+                    >
+                      {social.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
 
